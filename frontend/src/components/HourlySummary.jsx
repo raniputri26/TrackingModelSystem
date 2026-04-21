@@ -12,15 +12,15 @@ const HourlySummary = ({ filterMode, filterValue, filterCell }) => {
       const params = {};
       if (filterMode === 'day') params.date_filter = filterValue;
       else if (filterMode === 'month') params.month_filter = filterValue;
-      
+
       const res = await getHourlySummary(params);
       let summaryData = res.data;
-      
+
       // Filter by cell on client side or we could add it to backend params
       if (filterCell !== 'all') {
         summaryData = summaryData.filter(d => d.cell === filterCell);
       }
-      
+
       // Secondary sort to ensure Cell 1, Cell 2, etc. (backend does simple alpha sort)
       summaryData.sort((a, b) => {
         const numA = parseInt(a.cell.replace(/\D/g, ''), 10) || 0;
@@ -74,7 +74,7 @@ const HourlySummary = ({ filterMode, filterValue, filterCell }) => {
           </thead>
           <tbody className="divide-y divide-border/50">
             {loading && data.length === 0 ? (
-               <tr>
+              <tr>
                 <td colSpan="6" className="text-center py-24">
                   <div className="flex flex-col items-center gap-3">
                     <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary"></div>
@@ -126,8 +126,8 @@ const HourlySummary = ({ filterMode, filterValue, filterCell }) => {
                         {row['total_all'] ? row['total_all'].toLocaleString() : '0'}
                       </span>
                       <div className="w-full h-1 bg-surface-alt rounded-full mt-1 overflow-hidden max-w-[80px]">
-                        <div 
-                          className="h-full bg-primary" 
+                        <div
+                          className="h-full bg-primary"
                           style={{ width: `${Math.min(100, (row['total_all'] / 4000) * 100)}%` }}
                         />
                       </div>
@@ -135,7 +135,7 @@ const HourlySummary = ({ filterMode, filterValue, filterCell }) => {
                   </td>
                 </tr>
               ))
-             )}
+            )}
           </tbody>
           {data.length > 0 && (
             <tfoot className="bg-surface-alt/50 border-t border-border">

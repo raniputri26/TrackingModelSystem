@@ -176,14 +176,14 @@ function App() {
           {activeMenu !== 'hourly' && (
             <Header
               title={
-                activeMenu === 'dashboard' ? 'Analytics Dashboard' : 
-                activeMenu === 'hourly_summary' ? 'Hourly Performance Summary' :
-                'Production Tracking New Model'
+                activeMenu === 'dashboard' ? 'Analytics Dashboard' :
+                  activeMenu === 'hourly_summary' ? 'Hourly Performance Summary' :
+                    'Production Tracking New Model'
               }
               subtitle={
-                activeMenu === 'dashboard' ? 'Performance Overview & Trends' : 
-                activeMenu === 'hourly_summary' ? 'Live Aggregated Output Monitoring' :
-                'Production Monitoring'
+                activeMenu === 'dashboard' ? 'Performance Overview & Trends' :
+                  activeMenu === 'hourly_summary' ? 'Live Aggregated Output Monitoring' :
+                    'Production Monitoring'
               }
               onUploadClick={() => setIsUploadOpen(true)}
               categories={categories}
@@ -211,7 +211,7 @@ function App() {
               {activeMenu === 'hourly' ? (
                 <HourlyLogs />
               ) : activeMenu === 'hourly_summary' ? (
-                <HourlySummary 
+                <HourlySummary
                   filterMode={filterMode}
                   filterValue={filterValue}
                   filterCell={filterCell}
