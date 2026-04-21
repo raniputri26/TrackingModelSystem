@@ -49,4 +49,8 @@ export const getHourlySummary = (params) => {
   return api.get('/hourly-summary', { params });
 };
 
+export const getHourlyDates = () => {
+  return api.get('/hourly-dates');
+};
+
 export default api;

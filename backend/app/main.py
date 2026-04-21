@@ -194,4 +194,5 @@ def get_hourly_summary(date_filter: Optional[date] = None, month_filter: Optiona
 @app.get("/hourly-dates")
 def get_hourly_dates(db: Session = Depends(database.get_db)):
     dates = db.query(models.HourlyProduction.date).distinct().all()
-    return [d[0] for d in dates]
+    # Sort dates ascending so the newest is at the end
+    return sorted([d[0].isoformat() if hasattr(d[0], 'isoformat') else str(d[0]) for d in dates])

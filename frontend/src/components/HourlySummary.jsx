@@ -125,12 +125,6 @@ const HourlySummary = ({ filterMode, filterValue, filterCell }) => {
                       <span className="text-base font-black text-primary-light">
                         {row['total_all'] ? row['total_all'].toLocaleString() : '0'}
                       </span>
-                      <div className="w-full h-1 bg-surface-alt rounded-full mt-1 overflow-hidden max-w-[80px]">
-                        <div
-                          className="h-full bg-primary"
-                          style={{ width: `${Math.min(100, (row['total_all'] / 4000) * 100)}%` }}
-                        />
-                      </div>
                     </div>
                   </td>
                 </tr>

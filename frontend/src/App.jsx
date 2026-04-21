@@ -7,13 +7,14 @@ import LineChartSection from './components/LineChartSection';
 import UploadModal from './components/UploadModal';
 import HourlyLogs from './components/HourlyLogs';
 import HourlySummary from './components/HourlySummary';
-import { getCategories, getProductionData } from './api';
+import { getCategories, getProductionData, getHourlyDates } from './api';
 
 function App() {
   const [activeCategory, setActiveCategory] = useState('CUTTING + PREPARATION');
   const [activeMenu, setActiveMenu] = useState('hourly');
   const [categories, setCategories] = useState([]);
   const [data, setData] = useState([]);
+  const [hourlyDates, setHourlyDates] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [filterMode, setFilterMode] = useState('month'); // all, day, week, month
@@ -54,10 +55,20 @@ function App() {
     }
   };
 
+  const fetchHourlyDates = async () => {
+    try {
+      const res = await getHourlyDates();
+      setHourlyDates(res.data);
+    } catch (err) {
+      console.error("Failed to fetch hourly dates", err);
+    }
+  };
+
   useEffect(() => {
     const init = async () => {
       await fetchCategories();
       await fetchData();
+      await fetchHourlyDates();
     };
     init();
 
@@ -69,10 +80,13 @@ function App() {
     return () => clearInterval(interval);
   }, []);
 
-  // Get all unique dates from data for filter options
+  // Get unique dates based on active menu (Production vs Hourly)
   const availableDates = useMemo(() => {
+    if (activeMenu === 'hourly' || activeMenu === 'hourly_summary') {
+      return hourlyDates;
+    }
     return [...new Set(data.map(d => d.date))].sort();
-  }, [data]);
+  }, [data, hourlyDates, activeMenu]);
 
   // Get all unique cells for the active category
   const availableCells = useMemo(() => {
@@ -167,6 +181,12 @@ function App() {
           onSelectMenu={(menu) => {
             setActiveMenu(menu);
             setIsMobileMenuOpen(false); // Auto close on mobile
+            
+            // Set default filters for Hourly Summary
+            if (menu === 'hourly_summary') {
+              setFilterMode('day');
+              setFilterValue(new Date().toISOString().split('T')[0]);
+            }
           }}
         />
       </div>
