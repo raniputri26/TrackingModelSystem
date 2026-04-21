@@ -6,6 +6,7 @@ import DashboardGrid from './components/DashboardGrid';
 import LineChartSection from './components/LineChartSection';
 import UploadModal from './components/UploadModal';
 import HourlyLogs from './components/HourlyLogs';
+import HourlySummary from './components/HourlySummary';
 import { getCategories, getProductionData } from './api';
 
 function App() {
@@ -174,8 +175,16 @@ function App() {
         <div className="pt-6 px-2 pl-[4rem] lg:px-8 lg:pt-8 flex-shrink-0 z-10 bg-bg">
           {activeMenu !== 'hourly' && (
             <Header
-              title={activeMenu === 'dashboard' ? 'Analytics Dashboard' : 'Production Tracking New Model'}
-              subtitle={activeMenu === 'dashboard' ? 'Performance Overview & Trends' : 'Production Monitoring'}
+              title={
+                activeMenu === 'dashboard' ? 'Analytics Dashboard' : 
+                activeMenu === 'hourly_summary' ? 'Hourly Performance Summary' :
+                'Production Tracking New Model'
+              }
+              subtitle={
+                activeMenu === 'dashboard' ? 'Performance Overview & Trends' : 
+                activeMenu === 'hourly_summary' ? 'Live Aggregated Output Monitoring' :
+                'Production Monitoring'
+              }
               onUploadClick={() => setIsUploadOpen(true)}
               categories={categories}
               activeCategory={activeCategory}
@@ -201,6 +210,12 @@ function App() {
             <div className="space-y-10 animate-fade-in">
               {activeMenu === 'hourly' ? (
                 <HourlyLogs />
+              ) : activeMenu === 'hourly_summary' ? (
+                <HourlySummary 
+                  filterMode={filterMode}
+                  filterValue={filterValue}
+                  filterCell={filterCell}
+                />
               ) : activeMenu === 'dashboard' ? (
                 <div className="grid grid-cols-1 gap-10">
                   {visibleCategories.map(cat => (

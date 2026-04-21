@@ -1,6 +1,7 @@
 from fastapi import FastAPI, UploadFile, File, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 import shutil
 import os
 from . import models, database, excel_processor
@@ -162,3 +163,35 @@ def delete_hourly_log(log_id: int, db: Session = Depends(database.get_db)):
     db.delete(record)
     db.commit()
     return {"message": "Deleted successfully"}
+
+@app.get("/hourly-summary")
+def get_hourly_summary(date_filter: Optional[date] = None, month_filter: Optional[str] = None, db: Session = Depends(database.get_db)):
+    # Query to sum output + b_grade + c_grade grouped by cell and category
+    query = db.query(
+        models.HourlyProduction.cell,
+        models.HourlyProduction.category,
+        func.sum(models.HourlyProduction.output + models.HourlyProduction.b_grade + models.HourlyProduction.c_grade).label('total_output')
+    )
+    
+    if date_filter:
+        query = query.filter(models.HourlyProduction.date == date_filter)
+    elif month_filter:
+        # month_filter format: "YYYY-MM"
+        query = query.filter(func.DATE_FORMAT(models.HourlyProduction.date, '%Y-%m') == month_filter)
+    
+    results = query.group_by(models.HourlyProduction.cell, models.HourlyProduction.category).all()
+    
+    # Pivot the data
+    summary_map = {}
+    for cell, category, total in results:
+        if cell not in summary_map:
+            summary_map[cell] = {"cell": cell, "total_all": 0}
+        summary_map[cell][category] = total
+        summary_map[cell]["total_all"] += total
+        
+    return sorted(list(summary_map.values()), key=lambda x: x['cell'])
+
+@app.get("/hourly-dates")
+def get_hourly_dates(db: Session = Depends(database.get_db)):
+    dates = db.query(models.HourlyProduction.date).distinct().all()
+    return [d[0] for d in dates]

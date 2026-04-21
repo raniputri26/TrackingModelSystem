@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { LayoutDashboard, Activity, Clock, Pin, PinOff } from 'lucide-react';
+import { LayoutDashboard, Activity, Clock, Pin, PinOff, BarChart3 } from 'lucide-react';
 
 const Sidebar = ({ activeMenu, onSelectMenu }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -61,6 +61,17 @@ const Sidebar = ({ activeMenu, onSelectMenu }) => {
           <Clock size={18} className="min-w-[18px]" />
           <span className={`transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${isCollapsed ? 'max-w-0 opacity-0 ml-0' : 'max-w-[150px] opacity-100 ml-3'}`}>
             Hourly Output
+          </span>
+        </button>
+
+        <button
+          onClick={() => onSelectMenu('hourly_summary')}
+          title={isCollapsed ? "Hourly Summary" : ""}
+          className={`w-full nav-link flex items-center p-3 rounded-xl transition-all duration-200 overflow-hidden ${activeMenu === 'hourly_summary' ? 'active' : ''} ${isCollapsed ? 'justify-center' : 'justify-start'}`}
+        >
+          <BarChart3 size={18} className="min-w-[18px]" />
+          <span className={`transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${isCollapsed ? 'max-w-0 opacity-0 ml-0' : 'max-w-[150px] opacity-100 ml-3'}`}>
+            Hourly Summary
           </span>
         </button>
       </nav>

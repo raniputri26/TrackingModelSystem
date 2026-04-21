@@ -45,4 +45,8 @@ export const deleteHourlyLog = (id) => {
   return api.delete(`/hourly-logs/${id}`);
 };
 
+export const getHourlySummary = (params) => {
+  return api.get('/hourly-summary', { params });
+};
+
 export default api;
