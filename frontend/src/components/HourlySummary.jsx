@@ -143,31 +143,31 @@ const HourlySummary = ({ filterMode, filterValue, filterCell, activeCategory, ca
       )}
 
       <section className="glass-card overflow-hidden shadow-2xl">
-      <div className="p-6 border-b border-border flex justify-between items-center bg-surface-alt/30">
+      <div className="p-4 sm:p-6 border-b border-border flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 bg-surface-alt/30">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-            <BarChart3 size={22} className="text-primary" />
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+            <BarChart3 size={20} className="text-primary sm:size-[22px]" />
           </div>
           <div>
-            <h3 className="text-lg font-bold text-white">Hourly Production Summary</h3>
-            <p className="text-xs text-text-muted">Aggregated total output from hourly logs</p>
+            <h3 className="text-base sm:text-lg font-bold text-white leading-tight">Hourly Production Summary</h3>
+            <p className="text-[10px] sm:text-xs text-text-muted">Aggregated total output from hourly logs</p>
           </div>
         </div>
-        <div className="px-3 py-1.5 rounded-lg bg-surface-alt border border-border">
-          <span className="text-xs font-bold text-text-muted uppercase tracking-wider">{data.length} Cells Active</span>
+        <div className="self-start sm:self-auto px-3 py-1.5 rounded-lg bg-surface-alt border border-border">
+          <span className="text-[10px] sm:text-xs font-bold text-text-muted uppercase tracking-wider">{data.length} Cells Active</span>
         </div>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="data-grid">
+      <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent">
+        <table className="data-grid min-w-[800px] sm:min-w-full">
           <thead>
             <tr>
-              <th className="py-4 px-6 text-left text-xs font-bold text-text-muted uppercase tracking-widest">Cell Name</th>
-              <th className="py-4 px-6 text-right text-xs font-bold text-text-muted uppercase tracking-widest">Cutting + Preparation</th>
-              <th className="py-4 px-6 text-right text-xs font-bold text-text-muted uppercase tracking-widest">Computer Stitching</th>
-              <th className="py-4 px-6 text-right text-xs font-bold text-text-muted uppercase tracking-widest">Sewing</th>
-              <th className="py-4 px-6 text-right text-xs font-bold text-text-muted uppercase tracking-widest">Assembly</th>
-              <th className="py-4 px-6 text-right text-xs font-bold text-primary uppercase tracking-widest border-l border-border/50">Total Output</th>
+              <th className="py-4 px-4 sm:px-6 text-left text-[10px] sm:text-xs font-bold text-text-muted uppercase tracking-widest sticky left-0 z-10 bg-surface-alt/95 backdrop-blur-sm">Cell Name</th>
+              <th className="py-4 px-4 sm:px-6 text-right text-[10px] sm:text-xs font-bold text-text-muted uppercase tracking-widest">Cutting + Prep</th>
+              <th className="py-4 px-4 sm:px-6 text-right text-[10px] sm:text-xs font-bold text-text-muted uppercase tracking-widest">Comp Stitching</th>
+              <th className="py-4 px-4 sm:px-6 text-right text-[10px] sm:text-xs font-bold text-text-muted uppercase tracking-widest">Sewing</th>
+              <th className="py-4 px-4 sm:px-6 text-right text-[10px] sm:text-xs font-bold text-text-muted uppercase tracking-widest">Assembly</th>
+              <th className="py-4 px-4 sm:px-6 text-right text-[10px] sm:text-xs font-bold text-primary uppercase tracking-widest border-l border-border/50 sticky right-0 z-10 bg-surface-alt/95 backdrop-blur-sm">Total Output</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border/50">
@@ -193,34 +193,34 @@ const HourlySummary = ({ filterMode, filterValue, filterCell, activeCategory, ca
             ) : (
               data.map((row, idx) => (
                 <tr key={row.cell} className={`hover:bg-white/[0.03] transition-colors ${idx % 2 === 0 ? 'bg-transparent' : 'bg-white/[0.01]'}`}>
-                  <td className="py-4 px-6">
-                    <span className="bg-primary/10 text-primary border border-primary/20 px-3 py-1.5 rounded-lg font-black text-sm uppercase">
+                  <td className="py-4 px-4 sm:px-6 sticky left-0 z-10 bg-bg/95 group-hover:bg-surface-alt/50 backdrop-blur-sm border-r border-border/10">
+                    <span className="bg-primary/10 text-primary border border-primary/20 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg font-black text-[10px] sm:text-sm uppercase whitespace-nowrap">
                       {row.cell}
                     </span>
                   </td>
-                  <td className="py-4 px-6 text-right">
-                    <span className={`text-sm font-bold ${row['CUTTING + PREPARATION'] > 0 ? 'text-white' : 'text-text-muted/30'}`}>
+                  <td className="py-4 px-4 sm:px-6 text-right">
+                    <span className={`text-xs sm:text-sm font-bold ${row['CUTTING + PREPARATION'] > 0 ? 'text-white' : 'text-text-muted/30'}`}>
                       {row['CUTTING + PREPARATION'] ? row['CUTTING + PREPARATION'].toLocaleString() : '0'}
                     </span>
                   </td>
-                  <td className="py-4 px-6 text-right">
-                    <span className={`text-sm font-bold ${row['COMPUTER STITCHING'] > 0 ? 'text-white' : 'text-text-muted/30'}`}>
+                  <td className="py-4 px-4 sm:px-6 text-right">
+                    <span className={`text-xs sm:text-sm font-bold ${row['COMPUTER STITCHING'] > 0 ? 'text-white' : 'text-text-muted/30'}`}>
                       {row['COMPUTER STITCHING'] ? row['COMPUTER STITCHING'].toLocaleString() : '0'}
                     </span>
                   </td>
-                  <td className="py-4 px-6 text-right">
-                    <span className={`text-sm font-bold ${row['SEWING'] > 0 ? 'text-white' : 'text-text-muted/30'}`}>
+                  <td className="py-4 px-4 sm:px-6 text-right">
+                    <span className={`text-xs sm:text-sm font-bold ${row['SEWING'] > 0 ? 'text-white' : 'text-text-muted/30'}`}>
                       {row['SEWING'] ? row['SEWING'].toLocaleString() : '0'}
                     </span>
                   </td>
-                  <td className="py-4 px-6 text-right">
-                    <span className={`text-sm font-bold ${row['ASSEMBLY'] > 0 ? 'text-white' : 'text-text-muted/30'}`}>
+                  <td className="py-4 px-4 sm:px-6 text-right">
+                    <span className={`text-xs sm:text-sm font-bold ${row['ASSEMBLY'] > 0 ? 'text-white' : 'text-text-muted/30'}`}>
                       {row['ASSEMBLY'] ? row['ASSEMBLY'].toLocaleString() : '0'}
                     </span>
                   </td>
-                  <td className="py-4 px-6 text-right border-l border-border/50">
+                  <td className="py-4 px-4 sm:px-6 text-right border-l border-border/50 sticky right-0 z-10 bg-bg/95 backdrop-blur-sm">
                     <div className="flex flex-col items-end">
-                      <span className="text-base font-black text-primary-light">
+                      <span className="text-sm sm:text-base font-black text-primary-light">
                         {row['total_all'] ? row['total_all'].toLocaleString() : '0'}
                       </span>
                     </div>

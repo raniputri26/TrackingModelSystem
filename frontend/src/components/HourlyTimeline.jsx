@@ -112,19 +112,20 @@ const HourlyTimeline = ({ filterMode, filterValue, filterCell, category, title =
         </div>
       </div>
 
-      <div className="overflow-x-auto relative">
-        <table className="w-full text-sm border-collapse">
+      <div className="overflow-x-auto relative scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent touch-pan-x">
+        <table className="w-full text-sm border-separate border-spacing-0">
           <thead>
             <tr className="bg-surface-alt/50">
-              <th className="sticky left-0 z-20 bg-surface-alt/90 backdrop-blur-md py-4 px-6 text-left text-[10px] font-bold text-text-muted uppercase tracking-widest border-b border-r border-border min-w-[140px]">
+              <th className="sticky left-0 z-30 bg-surface-alt/95 backdrop-blur-md py-4 px-4 sm:px-6 text-left text-[10px] font-bold text-text-muted uppercase tracking-widest border-b border-r border-border min-w-[100px] sm:min-w-[140px]">
                 Cell Name
               </th>
               {HOUR_COLUMNS.map(hour => (
-                <th key={hour} className="py-4 px-4 text-center text-[10px] font-bold text-text-muted uppercase tracking-widest border-b border-border min-w-[100px]">
-                  {hour.split(' - ')[0]} - {hour.split(' - ')[1]}
+                <th key={hour} className="py-4 px-2 sm:px-4 text-center text-[10px] font-bold text-text-muted uppercase tracking-widest border-b border-border min-w-[80px] sm:min-w-[100px]">
+                  <span className="block sm:hidden">{hour.split(' - ')[0]}</span>
+                  <span className="hidden sm:block">{hour}</span>
                 </th>
               ))}
-              <th className="py-4 px-6 text-right text-[10px] font-bold text-primary uppercase tracking-widest border-b border-border bg-primary/5 min-w-[100px]">
+              <th className="sticky right-0 z-30 bg-primary/10 backdrop-blur-md py-4 px-4 sm:px-6 text-right text-[10px] font-bold text-primary uppercase tracking-widest border-b border-l border-border min-w-[80px] sm:min-w-[100px]">
                 Total
               </th>
             </tr>
@@ -148,8 +149,8 @@ const HourlyTimeline = ({ filterMode, filterValue, filterCell, category, title =
             ) : (
               data.map((row, idx) => (
                 <tr key={row.cell} className="hover:bg-white/[0.02] transition-colors group">
-                  <td className="sticky left-0 z-10 bg-bg/95 group-hover:bg-surface-alt/50 backdrop-blur-sm py-4 px-6 border-r border-border transition-colors">
-                    <span className="text-sm font-black text-white group-hover:text-primary transition-colors uppercase">
+                  <td className="sticky left-0 z-20 bg-bg/95 group-hover:bg-surface-alt/80 backdrop-blur-sm py-3 sm:py-4 px-4 sm:px-6 border-r border-border transition-colors">
+                    <span className="text-xs sm:text-sm font-black text-white group-hover:text-primary-light transition-colors uppercase whitespace-nowrap">
                       {row.cell}
                     </span>
                   </td>
@@ -159,16 +160,16 @@ const HourlyTimeline = ({ filterMode, filterValue, filterCell, category, title =
                     return (
                       <td 
                         key={hour} 
-                        className="py-2 px-2 text-center border-r border-border/30 last:border-r-0 cursor-pointer hover:bg-white/5 transition-colors"
+                        className="py-1.5 sm:py-2 px-1 sm:px-2 text-center border-r border-border/30 last:border-r-0 cursor-pointer hover:bg-white/5 transition-colors"
                         onClick={() => onCellClick && onCellClick(row.cell, hour, cellData.logs)}
                       >
-                        <div className={`py-2 px-1 rounded-lg font-black text-sm transition-all duration-300 ${getHeatmapClass(val)}`}>
+                        <div className={`py-1.5 sm:py-2 px-1 rounded-lg font-black text-xs sm:text-sm transition-all duration-300 shadow-sm ${getHeatmapClass(val)}`}>
                           {val > 0 ? val.toLocaleString() : '-'}
                         </div>
                       </td>
                     );
                   })}
-                  <td className="py-4 px-6 text-right font-black text-primary-light bg-primary/5">
+                  <td className="sticky right-0 z-20 bg-primary/5 group-hover:bg-primary/10 backdrop-blur-sm py-3 sm:py-4 px-4 sm:px-6 text-right font-black text-primary-light border-l border-border transition-colors">
                     {row.total_all.toLocaleString()}
                   </td>
                 </tr>
@@ -178,18 +179,18 @@ const HourlyTimeline = ({ filterMode, filterValue, filterCell, category, title =
           {data.length > 0 && (
             <tfoot className="bg-surface-alt/30 border-t-2 border-border">
               <tr className="font-bold">
-                <td className="sticky left-0 z-20 bg-surface-alt/90 backdrop-blur-md py-5 px-6 text-[10px] uppercase tracking-widest text-text-muted border-r border-border">
+                <td className="sticky left-0 z-30 bg-surface-alt/95 backdrop-blur-md py-4 sm:py-5 px-4 sm:px-6 text-[10px] uppercase tracking-widest text-text-muted border-r border-border">
                   Hourly Total
                 </td>
                 {HOUR_COLUMNS.map(hour => {
                   const hourlyTotal = data.reduce((acc, r) => acc + (r[hour]?.total || 0), 0);
                   return (
-                    <td key={hour} className="py-5 px-4 text-center text-sm text-white">
+                    <td key={hour} className="py-4 sm:py-5 px-2 sm:px-4 text-center text-xs sm:text-sm text-white border-r border-border/30 last:border-r-0">
                       {hourlyTotal.toLocaleString()}
                     </td>
                   );
                 })}
-                <td className="py-5 px-6 text-right text-lg text-primary bg-primary/10">
+                <td className="sticky right-0 z-30 bg-primary/10 backdrop-blur-md py-4 sm:py-5 px-4 sm:px-6 text-right text-base sm:text-lg text-primary border-l border-border">
                   {data.reduce((acc, r) => acc + r.total_all, 0).toLocaleString()}
                 </td>
               </tr>
