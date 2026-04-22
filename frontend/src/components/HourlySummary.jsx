@@ -2,10 +2,40 @@ import React, { useState, useEffect } from 'react';
 import { getHourlySummary } from '../api';
 import { TrendingUp, BarChart3 } from 'lucide-react';
 import HourlyTimeline from './HourlyTimeline';
+import HourlyLogModal from './HourlyLogModal';
+
+const CATEGORY_CELL_MAPPING = {
+  'CUTTING + PREPARATION': ['Cell 3', 'Cell 4', 'Cell 5', 'Cell 9', 'Cell 10', 'Cell 11'],
+  'COMPUTER STITCHING': ['Cell 3', 'Cell 4', 'Cell 5', 'Cell 9', 'Cell 10'],
+  'SEWING': ['Cell 3', 'Cell 4', 'Cell 5', 'Cell 9', 'Cell 10', 'Cell 11', 'Cell D6', 'Cell BZ'],
+  'ASSEMBLY': ['Cell 4', 'Cell 5', 'Cell 9', 'Cell 10', 'Cell 11'],
+};
 
 const HourlySummary = ({ filterMode, filterValue, filterCell, activeCategory, categories }) => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [modalData, setModalData] = useState(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  const handleCellClick = (cell, hour, existingLogs) => {
+    if (existingLogs && existingLogs.length > 0) {
+      // Edit mode (taking the first log if multiple exist)
+      setModalData(existingLogs[0]);
+    } else {
+      // Add mode
+      setModalData({
+        category: activeCategory === 'ALL CATEGORY' ? categories[0] : activeCategory,
+        cell: cell,
+        hour_range: hour,
+        date: filterMode === 'day' ? filterValue : new Date().toISOString().split('T')[0],
+        output: 0,
+        b_grade: 0,
+        c_grade: 0
+      });
+    }
+    setShowModal(true);
+  };
 
   const fetchData = async () => {
     setLoading(true);
@@ -17,12 +47,31 @@ const HourlySummary = ({ filterMode, filterValue, filterCell, activeCategory, ca
       const res = await getHourlySummary(params);
       let summaryData = res.data;
 
-      // Filter by cell on client side or we could add it to backend params
-      if (filterCell !== 'all') {
+      const CELL_ORDER = ['Cell 3', 'Cell 4', 'Cell 5', 'Cell 9', 'Cell 10', 'Cell 11', 'Cell D6', 'Cell BZ'];
+      
+      // For summary table, we use the union of all cells from all categories
+      const allDefaultCells = [...new Set(Object.values(CATEGORY_CELL_MAPPING).flat())];
+
+      if (filterCell === 'all') {
+        const existingCells = summaryData.map(d => d.cell);
+        allDefaultCells.forEach(cellName => {
+          if (!existingCells.includes(cellName)) {
+            summaryData.push({
+              cell: cellName,
+              total_all: 0
+            });
+          }
+        });
+      } else {
         summaryData = summaryData.filter(d => d.cell === filterCell);
+        if (summaryData.length === 0 && (CELL_ORDER.includes(filterCell) || allDefaultCells.includes(filterCell))) {
+          summaryData.push({
+            cell: filterCell,
+            total_all: 0
+          });
+        }
       }
 
-      const CELL_ORDER = ['Cell 3', 'Cell 4', 'Cell 5', 'Cell 6', 'Cell 9', 'Cell 10', 'Cell 11', 'Cell D6', 'Cell BZ'];
       summaryData.sort((a, b) => {
         const idxA = CELL_ORDER.indexOf(a.cell);
         const idxB = CELL_ORDER.indexOf(b.cell);
@@ -61,6 +110,8 @@ const HourlySummary = ({ filterMode, filterValue, filterCell, activeCategory, ca
             filterCell={filterCell} 
             category={cat}
             title={`Timeline: ${cat}`}
+            onCellClick={(cell, hour, logs) => handleCellClick(cell, hour, logs)}
+            refreshTrigger={refreshTrigger}
           />
         ))
       ) : (
@@ -70,6 +121,24 @@ const HourlySummary = ({ filterMode, filterValue, filterCell, activeCategory, ca
           filterCell={filterCell} 
           category={activeCategory}
           title={`Timeline: ${activeCategory}`}
+          onCellClick={(cell, hour, logs) => handleCellClick(cell, hour, logs)}
+          refreshTrigger={refreshTrigger}
+        />
+      )}
+
+      {showModal && (
+        <HourlyLogModal
+          editData={modalData}
+          onClose={() => {
+            setShowModal(false);
+            setModalData(null);
+          }}
+          onSuccess={() => {
+            setShowModal(false);
+            setModalData(null);
+            setRefreshTrigger(prev => prev + 1);
+            fetchData();
+          }}
         />
       )}
 

@@ -193,12 +193,8 @@ def get_hourly_summary(date_filter: Optional[date] = None, month_filter: Optiona
 
 @app.get("/hourly-timeline")
 def get_hourly_timeline(category: Optional[str] = None, date_filter: Optional[date] = None, month_filter: Optional[str] = None, db: Session = Depends(database.get_db)):
-    # Query to sum output + b_grade + c_grade grouped by cell and hour_range
-    query = db.query(
-        models.HourlyProduction.cell,
-        models.HourlyProduction.hour_range,
-        func.sum(models.HourlyProduction.output + models.HourlyProduction.b_grade + models.HourlyProduction.c_grade).label('total_output')
-    )
+    # Fetch records to allow access to individual IDs and details
+    query = db.query(models.HourlyProduction)
     
     if category and category != 'ALL CATEGORY':
         query = query.filter(models.HourlyProduction.category == category)
@@ -206,18 +202,40 @@ def get_hourly_timeline(category: Optional[str] = None, date_filter: Optional[da
     if date_filter:
         query = query.filter(models.HourlyProduction.date == date_filter)
     elif month_filter:
-        # month_filter format: "YYYY-MM"
         query = query.filter(func.DATE_FORMAT(models.HourlyProduction.date, '%Y-%m') == month_filter)
     
-    results = query.group_by(models.HourlyProduction.cell, models.HourlyProduction.hour_range).all()
+    results = query.all()
     
-    # Pivot the data
+    # Pivot the data in Python to preserve IDs and handle multiple logs if any
     timeline_map = {}
-    for cell, hour_range, total in results:
+    for log in results:
+        cell = log.cell
+        hour = log.hour_range
+        
         if cell not in timeline_map:
             timeline_map[cell] = {"cell": cell, "total_all": 0}
-        timeline_map[cell][hour_range] = int(total or 0)
-        timeline_map[cell]["total_all"] += int(total or 0)
+        
+        # Store as an object with details
+        if hour not in timeline_map[cell]:
+            timeline_map[cell][hour] = {
+                "total": 0,
+                "logs": []
+            }
+        
+        total_val = (log.output or 0) + (log.b_grade or 0) + (log.c_grade or 0)
+        timeline_map[cell][hour]["total"] += total_val
+        timeline_map[cell][hour]["logs"].append({
+            "id": log.id,
+            "category": log.category,
+            "cell": log.cell,
+            "date": log.date.isoformat() if hasattr(log.date, 'isoformat') else str(log.date),
+            "hour_range": log.hour_range,
+            "output": log.output,
+            "b_grade": log.b_grade,
+            "c_grade": log.c_grade,
+            "note": log.note
+        })
+        timeline_map[cell]["total_all"] += total_val
         
     return sorted(list(timeline_map.values()), key=lambda x: x['cell'])
 

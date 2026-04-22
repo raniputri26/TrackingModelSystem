@@ -5,11 +5,18 @@ import { Clock, TrendingUp, ChevronLeft, ChevronRight } from 'lucide-react';
 const HOUR_COLUMNS = [
   '07:00 - 08:00', '08:00 - 09:00', '09:00 - 10:00', '10:00 - 11:00',
   '11:00 - 12:00', '13:00 - 14:00', '14:00 - 15:00',
-  '15:00 - 16:00', '16:00 - 17:00', '17:00 - 18:00', '18:00 - 19:00',
-  '19:00 - 20:00', '20:00 - 21:00', '21:00 - 22:00',
+  '15:00 - 16:00', '16:00 - 17:00', '17:00 - 18:00', 
+  '18:30 - 19:30', '19:30 - 20:30', '20:30 - 21:30',
 ];
 
-const HourlyTimeline = ({ filterMode, filterValue, filterCell, category, title = "Hourly Production Timeline" }) => {
+const CATEGORY_CELL_MAPPING = {
+  'CUTTING + PREPARATION': ['Cell 3', 'Cell 4', 'Cell 5', 'Cell 9', 'Cell 10', 'Cell 11'],
+  'COMPUTER STITCHING': ['Cell 3', 'Cell 4', 'Cell 5', 'Cell 9', 'Cell 10'],
+  'SEWING': ['Cell 3', 'Cell 4', 'Cell 5', 'Cell 9', 'Cell 10', 'Cell 11', 'Cell D6', 'Cell BZ'],
+  'ASSEMBLY': ['Cell 4', 'Cell 5', 'Cell 9', 'Cell 10', 'Cell 11'],
+};
+
+const HourlyTimeline = ({ filterMode, filterValue, filterCell, category, title = "Hourly Production Timeline", onCellClick, refreshTrigger }) => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -23,11 +30,32 @@ const HourlyTimeline = ({ filterMode, filterValue, filterCell, category, title =
       const res = await getHourlyTimeline(params);
       let timelineData = res.data;
 
-      if (filterCell !== 'all') {
+      const CELL_ORDER = ['Cell 3', 'Cell 4', 'Cell 5', 'Cell 9', 'Cell 10', 'Cell 11', 'Cell D6', 'Cell BZ'];
+      const defaultCells = CATEGORY_CELL_MAPPING[category] || CELL_ORDER;
+
+      // If viewing all cells, ensure the category-specific default list is always present
+      if (filterCell === 'all') {
+        const existingCells = timelineData.map(d => d.cell);
+        defaultCells.forEach(cellName => {
+          if (!existingCells.includes(cellName)) {
+            timelineData.push({
+              cell: cellName,
+              total_all: 0
+            });
+          }
+        });
+      } else {
+        // If filtering by specific cell, only show that one
         timelineData = timelineData.filter(d => d.cell === filterCell);
+        // If it's a standard cell but no data exists yet, ensure it shows up
+        if (timelineData.length === 0 && (CELL_ORDER.includes(filterCell) || defaultCells.includes(filterCell))) {
+          timelineData.push({
+            cell: filterCell,
+            total_all: 0
+          });
+        }
       }
 
-      const CELL_ORDER = ['Cell 3', 'Cell 4', 'Cell 5', 'Cell 6', 'Cell 9', 'Cell 10', 'Cell 11', 'Cell D6', 'Cell BZ'];
       timelineData.sort((a, b) => {
         const idxA = CELL_ORDER.indexOf(a.cell);
         const idxB = CELL_ORDER.indexOf(b.cell);
@@ -52,7 +80,7 @@ const HourlyTimeline = ({ filterMode, filterValue, filterCell, category, title =
     fetchData();
     const interval = setInterval(fetchData, 15000);
     return () => clearInterval(interval);
-  }, [filterMode, filterValue, filterCell, category]);
+  }, [filterMode, filterValue, filterCell, category, refreshTrigger]);
 
   const getHeatmapClass = (value) => {
     if (!value || value === 0) return 'text-text-muted/20';
@@ -126,9 +154,14 @@ const HourlyTimeline = ({ filterMode, filterValue, filterCell, category, title =
                     </span>
                   </td>
                   {HOUR_COLUMNS.map(hour => {
-                    const val = row[hour] || 0;
+                    const cellData = row[hour] || { total: 0, logs: [] };
+                    const val = cellData.total;
                     return (
-                      <td key={hour} className="py-2 px-2 text-center border-r border-border/30 last:border-r-0">
+                      <td 
+                        key={hour} 
+                        className="py-2 px-2 text-center border-r border-border/30 last:border-r-0 cursor-pointer hover:bg-white/5 transition-colors"
+                        onClick={() => onCellClick && onCellClick(row.cell, hour, cellData.logs)}
+                      >
                         <div className={`py-2 px-1 rounded-lg font-black text-sm transition-all duration-300 ${getHeatmapClass(val)}`}>
                           {val > 0 ? val.toLocaleString() : '-'}
                         </div>
@@ -149,7 +182,7 @@ const HourlyTimeline = ({ filterMode, filterValue, filterCell, category, title =
                   Hourly Total
                 </td>
                 {HOUR_COLUMNS.map(hour => {
-                  const hourlyTotal = data.reduce((acc, r) => acc + (r[hour] || 0), 0);
+                  const hourlyTotal = data.reduce((acc, r) => acc + (r[hour]?.total || 0), 0);
                   return (
                     <td key={hour} className="py-5 px-4 text-center text-sm text-white">
                       {hourlyTotal.toLocaleString()}

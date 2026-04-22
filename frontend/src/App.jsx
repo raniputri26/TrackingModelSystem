@@ -126,7 +126,7 @@ function App() {
     if (!data.length) return [];
     const categoryData = data.filter(d => d.category === activeCategory);
     const unique = [...new Set(categoryData.map(d => d.cell))];
-    const CELL_ORDER = ['Cell 3', 'Cell 4', 'Cell 5', 'Cell 6', 'Cell 9', 'Cell 10', 'Cell 11', 'Cell D6', 'Cell BZ'];
+    const CELL_ORDER = ['Cell 3', 'Cell 4', 'Cell 5', 'Cell 9', 'Cell 10', 'Cell 11', 'Cell D6', 'Cell BZ'];
     return unique.sort((a, b) => {
       const idxA = CELL_ORDER.indexOf(a);
       const idxB = CELL_ORDER.indexOf(b);
