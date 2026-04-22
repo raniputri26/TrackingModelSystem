@@ -25,9 +25,27 @@ const HOUR_ORDER = [
   '19:00 - 20:00', '20:00 - 21:00', '21:00 - 22:00',
 ];
 
+const CELL_ORDER = ['Cell 3', 'Cell 5', 'Cell 6', 'Cell 9', 'Cell 10', 'Cell 11', 'Cell D6', 'Cell BZ'];
+
 const cellSortKey = (name) => {
+  const idx = CELL_ORDER.indexOf(name);
+  if (idx !== -1) return idx;
   const match = name.match(/\d+/);
-  return match ? parseInt(match[0], 10) : 999;
+  return match ? parseInt(match[0], 10) + 100 : 999;
+};
+
+const CustomXAxisTick = ({ x, y, payload }) => {
+  const parts = payload.value.split(' - ');
+  if (parts.length < 2) return <text x={x} y={y} dy={12} textAnchor="middle" fill="var(--color-text-muted)" fontSize={9}>{payload.value}</text>;
+  
+  return (
+    <g transform={`translate(${x},${y})`}>
+      <text x={0} y={0} textAnchor="middle" fill="var(--color-text-muted)" fontSize={9} fontWeight="700">
+        <tspan x={0} dy={12}>{parts[0]} -</tspan>
+        <tspan x={0} dy={12}>{parts[1]}</tspan>
+      </text>
+    </g>
+  );
 };
 
 const HourlyLogs = () => {
@@ -142,12 +160,12 @@ const HourlyLogs = () => {
       }
     });
 
-    // Sort: First by Cell Number, then by Category Order
+    // Sort based on the standardized CELL_ORDER
     return pairs.sort((a, b) => {
-      const numA = parseInt(a.cell.replace(/\D/g, ''), 10) || 0;
-      const numB = parseInt(b.cell.replace(/\D/g, ''), 10) || 0;
+      const idxA = cellSortKey(a.cell);
+      const idxB = cellSortKey(b.cell);
       
-      if (numA !== numB) return numA - numB;
+      if (idxA !== idxB) return idxA - idxB;
       
       // Secondary sort: pre-defined CATEGORY_ORDER index
       return CATEGORY_ORDER.indexOf(a.category) - CATEGORY_ORDER.indexOf(b.category);
@@ -196,7 +214,7 @@ const HourlyLogs = () => {
       const logsInHour = filteredLogs.filter(l => l.hour_range === hour);
       const totalOutput = logsInHour.reduce((sum, l) => sum + (l.output || 0) + (l.b_grade || 0) + (l.c_grade || 0), 0);
       return {
-        name: hour.split(' - ')[0],
+        name: hour,
         fullName: hour,
         output: totalOutput
       };
@@ -407,7 +425,7 @@ const HourlyLogs = () => {
           
           <div className="h-[250px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart data={hourlyChartData} margin={{ top: 45, right: 0, left: 0, bottom: 0 }}>
+              <ComposedChart data={hourlyChartData} margin={{ top: 45, right: 0, left: 0, bottom: 25 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
                 <XAxis 
                   dataKey="name" 
@@ -416,6 +434,7 @@ const HourlyLogs = () => {
                   tickLine={false} 
                   axisLine={false}
                   interval={0}
+                  tick={<CustomXAxisTick />}
                 />
                 <YAxis 
                   stroke="var(--color-text-muted)" 

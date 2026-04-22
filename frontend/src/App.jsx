@@ -126,13 +126,17 @@ function App() {
     if (!data.length) return [];
     const categoryData = data.filter(d => d.category === activeCategory);
     const unique = [...new Set(categoryData.map(d => d.cell))];
+    const CELL_ORDER = ['Cell 3', 'Cell 5', 'Cell 6', 'Cell 9', 'Cell 10', 'Cell 11', 'Cell D6', 'Cell BZ'];
     return unique.sort((a, b) => {
-      const matchA = a.match(/\d+/);
-      const matchB = b.match(/\d+/);
-      const numA = matchA ? parseInt(matchA[0], 10) : 0;
-      const numB = matchB ? parseInt(matchB[0], 10) : 0;
-      if (numA !== numB) return numA - numB;
-      return a.localeCompare(b);
+      const idxA = CELL_ORDER.indexOf(a);
+      const idxB = CELL_ORDER.indexOf(b);
+      if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+      if (idxA !== -1) return -1;
+      if (idxB !== -1) return 1;
+      
+      const numA = parseInt(a.replace(/\D/g, ''), 10) || 0;
+      const numB = parseInt(b.replace(/\D/g, ''), 10) || 0;
+      return numA - numB || a.localeCompare(b);
     });
   }, [data, activeCategory]);
 

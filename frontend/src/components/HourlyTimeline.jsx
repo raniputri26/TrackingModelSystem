@@ -27,6 +27,19 @@ const HourlyTimeline = ({ filterMode, filterValue, filterCell, category, title =
         timelineData = timelineData.filter(d => d.cell === filterCell);
       }
 
+      const CELL_ORDER = ['Cell 3', 'Cell 5', 'Cell 6', 'Cell 9', 'Cell 10', 'Cell 11', 'Cell D6', 'Cell BZ'];
+      timelineData.sort((a, b) => {
+        const idxA = CELL_ORDER.indexOf(a.cell);
+        const idxB = CELL_ORDER.indexOf(b.cell);
+        if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+        if (idxA !== -1) return -1;
+        if (idxB !== -1) return 1;
+        
+        const numA = parseInt(a.cell.replace(/\D/g, ''), 10) || 0;
+        const numB = parseInt(b.cell.replace(/\D/g, ''), 10) || 0;
+        return numA - numB || a.cell.localeCompare(b.cell);
+      });
+
       setData(timelineData);
     } catch (err) {
       console.error("Failed to fetch hourly timeline", err);
