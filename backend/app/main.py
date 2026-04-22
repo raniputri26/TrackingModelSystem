@@ -191,6 +191,36 @@ def get_hourly_summary(date_filter: Optional[date] = None, month_filter: Optiona
         
     return sorted(list(summary_map.values()), key=lambda x: x['cell'])
 
+@app.get("/hourly-timeline")
+def get_hourly_timeline(category: Optional[str] = None, date_filter: Optional[date] = None, month_filter: Optional[str] = None, db: Session = Depends(database.get_db)):
+    # Query to sum output + b_grade + c_grade grouped by cell and hour_range
+    query = db.query(
+        models.HourlyProduction.cell,
+        models.HourlyProduction.hour_range,
+        func.sum(models.HourlyProduction.output + models.HourlyProduction.b_grade + models.HourlyProduction.c_grade).label('total_output')
+    )
+    
+    if category and category != 'ALL CATEGORY':
+        query = query.filter(models.HourlyProduction.category == category)
+    
+    if date_filter:
+        query = query.filter(models.HourlyProduction.date == date_filter)
+    elif month_filter:
+        # month_filter format: "YYYY-MM"
+        query = query.filter(func.DATE_FORMAT(models.HourlyProduction.date, '%Y-%m') == month_filter)
+    
+    results = query.group_by(models.HourlyProduction.cell, models.HourlyProduction.hour_range).all()
+    
+    # Pivot the data
+    timeline_map = {}
+    for cell, hour_range, total in results:
+        if cell not in timeline_map:
+            timeline_map[cell] = {"cell": cell, "total_all": 0}
+        timeline_map[cell][hour_range] = int(total or 0)
+        timeline_map[cell]["total_all"] += int(total or 0)
+        
+    return sorted(list(timeline_map.values()), key=lambda x: x['cell'])
+
 @app.get("/hourly-dates")
 def get_hourly_dates(db: Session = Depends(database.get_db)):
     dates = db.query(models.HourlyProduction.date).distinct().all()

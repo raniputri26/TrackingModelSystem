@@ -6,8 +6,9 @@ import DashboardGrid from './components/DashboardGrid';
 import LineChartSection from './components/LineChartSection';
 import UploadModal from './components/UploadModal';
 import HourlyLogs from './components/HourlyLogs';
+import HourlyDashboardChart from './components/HourlyDashboardChart';
 import HourlySummary from './components/HourlySummary';
-import { getCategories, getProductionData, getHourlyDates } from './api';
+import { getCategories, getProductionData, getHourlyDates, getHourlyLogs } from './api';
 
 function App() {
   const [activeCategory, setActiveCategory] = useState('CUTTING + PREPARATION');
@@ -15,6 +16,7 @@ function App() {
   const [categories, setCategories] = useState([]);
   const [data, setData] = useState([]);
   const [hourlyDates, setHourlyDates] = useState([]);
+  const [hourlyDashboardData, setHourlyDashboardData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [filterMode, setFilterMode] = useState('month'); // all, day, week, month
@@ -33,10 +35,19 @@ function App() {
   const fetchCategories = async () => {
     try {
       const res = await getCategories();
-      // Sort categories in the fixed order
-      const sorted = CATEGORY_ORDER.filter(c => res.data.includes(c));
-      // Add any categories from DB that aren't in our fixed order
-      res.data.forEach(c => { if (!sorted.includes(c)) sorted.push(c); });
+      // Start with ALL CATEGORY
+      const sorted = ['ALL CATEGORY'];
+      
+      // Add standard categories in fixed order
+      CATEGORY_ORDER.forEach(c => {
+        if (res.data.includes(c)) sorted.push(c);
+      });
+
+      // Add any other categories from DB
+      res.data.forEach(c => { 
+        if (!sorted.includes(c)) sorted.push(c); 
+      });
+      
       setCategories(sorted);
     } catch (err) {
       console.error("Failed to fetch categories", err);
@@ -64,11 +75,26 @@ function App() {
     }
   };
 
+  const fetchHourlyDashboardData = async () => {
+    try {
+      const params = {};
+      if (filterMode === 'day') params.date_filter = filterValue;
+      // Note: Backend might need update for month_filter in hourly-logs if needed, 
+      // but for now we focus on daily snapshot as requested by user.
+      
+      const res = await getHourlyLogs(params);
+      setHourlyDashboardData(res.data);
+    } catch (err) {
+      console.error("Failed to fetch hourly dashboard data", err);
+    }
+  };
+
   useEffect(() => {
     const init = async () => {
       await fetchCategories();
       await fetchData();
       await fetchHourlyDates();
+      if (activeMenu === 'dashboard') await fetchHourlyDashboardData();
     };
     init();
 
@@ -79,6 +105,13 @@ function App() {
 
     return () => clearInterval(interval);
   }, []);
+
+  // Fetch hourly dashboard data when filters or menu changes
+  useEffect(() => {
+    if (activeMenu === 'dashboard') {
+      fetchHourlyDashboardData();
+    }
+  }, [activeMenu, filterMode, filterValue]);
 
   // Get unique dates based on active menu (Production vs Hourly)
   const availableDates = useMemo(() => {
@@ -153,8 +186,10 @@ function App() {
     return result;
   }, [data, filterMode, filterValue, filterCell]);
 
-  // Show only the selected category
-  const visibleCategories = [activeCategory];
+  // Show all categories if "ALL CATEGORY" is selected, otherwise show only the selected one
+  const visibleCategories = activeCategory === 'ALL CATEGORY'
+    ? categories.filter(c => c !== 'ALL CATEGORY')
+    : [activeCategory];
 
   return (
     <div className="flex h-screen bg-bg overflow-hidden relative">
@@ -235,6 +270,8 @@ function App() {
                   filterMode={filterMode}
                   filterValue={filterValue}
                   filterCell={filterCell}
+                  activeCategory={activeCategory}
+                  categories={categories.filter(c => c !== 'ALL CATEGORY')}
                 />
               ) : activeMenu === 'dashboard' ? (
                 <div className="grid grid-cols-1 gap-10">

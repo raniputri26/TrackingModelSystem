@@ -19,9 +19,8 @@ yarn-debug.log*
 yarn-error.log*
 
 # Environment Variables
-.env
+# .env (Base environment files are now tracked to share defaults)
 backend/.env
-frontend/.env
 *.env.local
 
 # IDEs

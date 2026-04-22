@@ -53,4 +53,8 @@ export const getHourlyDates = () => {
   return api.get('/hourly-dates');
 };
 
+export const getHourlyTimeline = (params) => {
+  return api.get('/hourly-timeline', { params });
+};
+
 export default api;

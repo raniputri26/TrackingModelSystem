@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { getHourlySummary } from '../api';
 import { TrendingUp, BarChart3 } from 'lucide-react';
+import HourlyTimeline from './HourlyTimeline';
 
-const HourlySummary = ({ filterMode, filterValue, filterCell }) => {
+const HourlySummary = ({ filterMode, filterValue, filterCell, activeCategory, categories }) => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -44,7 +45,29 @@ const HourlySummary = ({ filterMode, filterValue, filterCell }) => {
   }, [filterMode, filterValue, filterCell]);
 
   return (
-    <section className="glass-card overflow-hidden animate-fade-in shadow-2xl">
+    <div className="space-y-8 animate-fade-in">
+      {activeCategory === 'ALL CATEGORY' ? (
+        categories.map(cat => (
+          <HourlyTimeline 
+            key={cat}
+            filterMode={filterMode} 
+            filterValue={filterValue} 
+            filterCell={filterCell} 
+            category={cat}
+            title={`Timeline: ${cat}`}
+          />
+        ))
+      ) : (
+        <HourlyTimeline 
+          filterMode={filterMode} 
+          filterValue={filterValue} 
+          filterCell={filterCell} 
+          category={activeCategory}
+          title={`Timeline: ${activeCategory}`}
+        />
+      )}
+
+      <section className="glass-card overflow-hidden shadow-2xl">
       <div className="p-6 border-b border-border flex justify-between items-center bg-surface-alt/30">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
@@ -156,6 +179,7 @@ const HourlySummary = ({ filterMode, filterValue, filterCell }) => {
         </table>
       </div>
     </section>
+    </div>
   );
 };
 
