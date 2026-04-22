@@ -53,127 +53,98 @@ const Header = ({
   }, [availableDates]);
 
   return (
-    <header className="mb-8 space-y-5">
+    <header className="mb-4 sm:mb-8 space-y-3 sm:space-y-5">
       {/* Top bar */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5 lg:gap-0">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 lg:gap-0">
         <div className="w-full lg:w-auto">
-          <h2 className="text-3xl font-extrabold tracking-tight text-white mb-1">{title}</h2>
-          <p className="text-text-muted font-medium">{subtitle}</p>
+          <h2 className="text-xl sm:text-3xl font-extrabold tracking-tight text-white leading-tight sm:mb-1">{title}</h2>
+          <p className="text-[10px] sm:text-sm text-text-muted font-medium">{subtitle}</p>
         </div>
 
-        <div className="flex flex-wrap lg:flex-nowrap items-center gap-3 w-full lg:w-auto">
-          {/* Search */}
-          <div className="relative glass-card px-3 py-2 flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full lg:w-auto">
+          {/* Search - Hidden on mobile to save space */}
+          <div className="hidden sm:flex relative glass-card px-3 py-2 items-center gap-2">
             <Search className="text-text-muted" size={15} />
             <input 
               type="text" 
               placeholder="Search..." 
-              className="bg-transparent border-none outline-none text-sm w-32 text-white placeholder:text-text-muted"
+              className="bg-transparent border-none outline-none text-sm w-24 sm:w-32 text-white placeholder:text-text-muted"
             />
           </div>
 
-          {/* Filter Mode Dropdown */}
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="relative">
-              <Filter size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-primary pointer-events-none" />
+          {/* Filters Row */}
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 flex-1 sm:flex-none">
+            {/* Filter Mode */}
+            <div className="relative flex-1 sm:flex-none min-w-[80px]">
               <select
                 value={filterMode}
                 onChange={(e) => onFilterModeChange(e.target.value)}
-                className="glass-card pl-8 pr-8 py-2 text-sm font-bold appearance-none cursor-pointer bg-surface-alt border border-border rounded-xl outline-none focus:border-primary transition-colors"
+                className="w-full glass-card pl-3 pr-7 py-1.5 text-[10px] sm:text-sm font-bold appearance-none cursor-pointer bg-surface-alt border border-border rounded-xl outline-none focus:border-primary transition-colors"
               >
-                <option value="all">All Data</option>
+                <option value="all">All</option>
                 <option value="day">Day</option>
                 <option value="week">Week</option>
                 <option value="month">Month</option>
               </select>
-              <ChevronDown size={14} className="absolute right-2 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
+              <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
             </div>
 
             {/* Dynamic filter value selector */}
-            {filterMode === 'day' && dateOptions.length > 0 && (
-              <div className="relative animate-fade-in">
+            {(filterMode === 'day' || filterMode === 'week' || filterMode === 'month') && (
+              <div className="relative flex-1 sm:flex-none min-w-[100px] animate-fade-in">
                 <select
                   value={filterValue}
                   onChange={(e) => onFilterValueChange(e.target.value)}
-                  className="glass-card px-4 pr-8 py-2 text-sm appearance-none cursor-pointer bg-surface-alt border border-border rounded-xl outline-none focus:border-primary transition-colors"
+                  className="w-full glass-card px-3 pr-7 py-1.5 text-[10px] sm:text-sm appearance-none cursor-pointer bg-surface-alt border border-border rounded-xl outline-none focus:border-primary transition-colors truncate"
                 >
-                  {dateOptions.map(opt => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
-                  ))}
+                  {filterMode === 'day' && dateOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                  {filterMode === 'week' && weekOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                  {filterMode === 'month' && monthOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
                 </select>
-                <ChevronDown size={14} className="absolute right-2 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
-              </div>
-            )}
-
-            {filterMode === 'week' && weekOptions.length > 0 && (
-              <div className="relative animate-fade-in">
-                <select
-                  value={filterValue}
-                  onChange={(e) => onFilterValueChange(e.target.value)}
-                  className="glass-card px-4 pr-8 py-2 text-sm appearance-none cursor-pointer bg-surface-alt border border-border rounded-xl outline-none focus:border-primary transition-colors"
-                >
-                  {weekOptions.map(opt => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
-                  ))}
-                </select>
-                <ChevronDown size={14} className="absolute right-2 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
-              </div>
-            )}
-
-            {filterMode === 'month' && monthOptions.length > 0 && (
-              <div className="relative animate-fade-in">
-                <select
-                  value={filterValue}
-                  onChange={(e) => onFilterValueChange(e.target.value)}
-                  className="glass-card px-4 pr-8 py-2 text-sm appearance-none cursor-pointer bg-surface-alt border border-border rounded-xl outline-none focus:border-primary transition-colors"
-                >
-                  {monthOptions.map(opt => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
-                  ))}
-                </select>
-                <ChevronDown size={14} className="absolute right-2 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
+                <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
               </div>
             )}
 
             {/* Cell Filter */}
             {availableCells && availableCells.length > 0 && (
-              <div className="relative border-l border-border pl-4 ml-2 max-w-48">
+              <div className="relative flex-1 sm:flex-none min-w-[80px] sm:border-l sm:border-border sm:pl-3">
                 <select
                   value={filterCell}
                   onChange={(e) => onFilterCellChange(e.target.value)}
-                  className="glass-card px-4 pr-8 py-2 text-sm appearance-none cursor-pointer bg-surface-alt border border-border rounded-xl outline-none focus:border-primary transition-colors truncate max-w-full"
+                  className="w-full glass-card px-3 pr-7 py-1.5 text-[10px] sm:text-sm appearance-none cursor-pointer bg-surface-alt border border-border rounded-xl outline-none focus:border-primary transition-colors truncate"
                 >
-                  <option value="all">All Cells</option>
+                  <option value="all">Cells</option>
                   {availableCells.map(cell => (
                     <option key={cell} value={cell}>{cell}</option>
                   ))}
                 </select>
-                <ChevronDown size={14} className="absolute right-2 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
+                <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
               </div>
             )}
           </div>
 
-          <button className="glass-card p-2.5 text-text-muted hover:text-white transition-colors">
-            <Bell size={18} />
-          </button>
+          <div className="flex items-center gap-2">
+            <button className="glass-card p-1.5 sm:p-2 text-text-muted hover:text-white transition-colors">
+              <Bell size={16} />
+            </button>
 
-          <button onClick={onUploadClick} className="btn-primary flex items-center justify-center gap-2 shrink-0">
-            <Upload size={16} />
-            <span className="hidden sm:inline">Import Data</span>
-            <span className="sm:hidden">Import</span>
-          </button>
+            <button onClick={onUploadClick} className="btn-primary flex items-center justify-center gap-2 shrink-0 py-1.5 px-3 sm:py-2 sm:px-4">
+              <Upload size={14} className="sm:size-4" />
+              <span className="text-xs sm:text-sm font-bold">Import</span>
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Category Tabs */}
       {categories && categories.length > 0 && (
-        <div className="flex overflow-x-auto hide-scrollbar border-b border-border/50 pb-1 w-full lg:justify-center relative">
-          <div className="flex gap-2 min-w-max pr-4">
+        <div className="flex overflow-x-auto hide-scrollbar border-b border-border/30 w-full lg:justify-center relative">
+          <div className="flex gap-1 sm:gap-2 min-w-max pr-4">
             {categories.map(cat => (
             <button
               key={cat}
               onClick={() => onSelectCategory(cat)}
-              className={`px-5 py-2.5 text-sm font-bold rounded-t-lg transition-all border-b-2 whitespace-nowrap ${
+              className={`px-3 py-2 sm:px-5 sm:py-2.5 text-[10px] sm:text-sm font-bold rounded-t-lg transition-all border-b-2 whitespace-nowrap ${
                 activeCategory === cat
                   ? 'border-primary text-primary bg-primary/5'
                   : 'border-transparent text-text-muted hover:text-white hover:border-border'

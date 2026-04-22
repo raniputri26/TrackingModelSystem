@@ -90,24 +90,24 @@ const HourlyTimeline = ({ filterMode, filterValue, filterCell, category, title =
 
   return (
     <section className="glass-card overflow-hidden animate-fade-in shadow-2xl mb-8 border border-primary/10">
-      <div className="p-6 border-b border-border flex justify-between items-center bg-surface-alt/30">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-            <Clock size={22} className="text-primary" />
+      <div className="p-3 sm:p-6 border-b border-border flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 bg-surface-alt/30">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+            <Clock size={18} className="text-primary sm:size-[22px]" />
           </div>
-          <div>
-            <h3 className="text-lg font-bold text-white">{title}</h3>
-            <p className="text-xs text-text-muted">Real-time output breakdown per hour per cell</p>
+          <div className="min-w-0">
+            <h3 className="text-sm sm:text-lg font-bold text-white truncate">{title}</h3>
+            <p className="text-[9px] sm:text-xs text-text-muted truncate">Output breakdown per hour</p>
           </div>
         </div>
-        <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-alt border border-border">
-                <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest">Target Met (≥120)</span>
+        <div className="flex items-center gap-3 sm:gap-4">
+            <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-surface-alt border border-border">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                <span className="text-[8px] sm:text-[10px] font-bold text-text-muted uppercase tracking-wider">Target Met</span>
             </div>
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-alt border border-border">
-                <div className="w-2 h-2 rounded-full bg-red-500" />
-                <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest">Below Target (&lt;120)</span>
+            <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-surface-alt border border-border">
+                <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                <span className="text-[8px] sm:text-[10px] font-bold text-text-muted uppercase tracking-wider">Below</span>
             </div>
         </div>
       </div>
