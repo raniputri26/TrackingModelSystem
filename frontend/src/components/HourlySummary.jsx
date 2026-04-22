@@ -22,7 +22,7 @@ const HourlySummary = ({ filterMode, filterValue, filterCell, activeCategory, ca
         summaryData = summaryData.filter(d => d.cell === filterCell);
       }
 
-      const CELL_ORDER = ['Cell 3', 'Cell 5', 'Cell 6', 'Cell 9', 'Cell 10', 'Cell 11', 'Cell D6', 'Cell BZ'];
+      const CELL_ORDER = ['Cell 3', 'Cell 4', 'Cell 5', 'Cell 6', 'Cell 9', 'Cell 10', 'Cell 11', 'Cell D6', 'Cell BZ'];
       summaryData.sort((a, b) => {
         const idxA = CELL_ORDER.indexOf(a.cell);
         const idxB = CELL_ORDER.indexOf(b.cell);
