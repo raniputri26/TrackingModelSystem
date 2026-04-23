@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts';
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine, LabelList } from 'recharts';
 
 const LineChartSection = ({ data, title }) => {
   // Transform data for Output/Day
@@ -136,7 +136,16 @@ const LineChartSection = ({ data, title }) => {
             fill={colors[index % colors.length]}
             radius={[4, 4, 0, 0]}
             animationDuration={1500}
-          />
+          >
+            <LabelList 
+              dataKey={name} 
+              position="top" 
+              fontSize={10} 
+              fill="var(--color-text-muted)"
+              offset={8}
+              formatter={(val) => val > 0 ? val.toLocaleString() : ''}
+            />
+          </Bar>
         ))}
       </BarChart>
     </ResponsiveContainer>
@@ -158,8 +167,51 @@ const LineChartSection = ({ data, title }) => {
 
       <div className="glass-card p-6">
         <h4 className="text-sm font-bold text-text-muted mb-6 uppercase tracking-wider">Trend Output / Day</h4>
-        <div className="h-[350px] w-full">
-          {renderChart(chartDataDay, (value) => `${value.toLocaleString()}`)}
+        <div className="h-[400px] w-full">
+          {renderBarChart(chartDataDay, (value) => `${value.toLocaleString()}`)}
+        </div>
+      </div>
+
+      {/* Data Table */}
+      <div className="glass-card overflow-hidden">
+        <div className="p-4 sm:p-6 border-b border-border bg-surface-alt/30">
+          <h4 className="text-sm font-bold text-text-muted uppercase tracking-wider">Output / Day Data Table</h4>
+        </div>
+        <div className="overflow-x-auto hide-scrollbar">
+          <table className="w-full text-left text-sm whitespace-nowrap">
+            <thead>
+              <tr className="bg-surface-alt/50 border-b border-border">
+                <th className="p-3 sm:p-4 font-bold text-text-muted uppercase tracking-wider sticky left-0 z-10 border-r border-border min-w-[120px]" style={{ backgroundColor: 'var(--color-bg)' }}>Cell Name</th>
+                {chartDataDay.map(day => (
+                  <th key={day.name} className="p-3 sm:p-4 font-bold text-text-muted text-center border-r border-border/30 min-w-[80px]">{day.name}</th>
+                ))}
+                <th className="p-3 sm:p-4 font-bold text-text-muted uppercase tracking-wider text-center sticky right-0 z-10 border-l border-border min-w-[100px]" style={{ backgroundColor: 'var(--color-bg)' }}>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {cellNames.map((cell, idx) => {
+                const total = chartDataDay.reduce((sum, day) => sum + (day[cell] || 0), 0);
+                return (
+                  <tr key={cell} className="border-b border-border/50 hover:bg-white/5 transition-colors">
+                    <td className="p-3 sm:p-4 font-bold text-white sticky left-0 z-10 border-r border-border" style={{ backgroundColor: 'var(--color-bg)' }}>
+                      <div className="flex items-center gap-2">
+                        <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: colors[idx % colors.length] }} />
+                        {cell}
+                      </div>
+                    </td>
+                    {chartDataDay.map(day => (
+                      <td key={day.name} className="p-3 sm:p-4 text-center text-text border-r border-border/30">
+                        {day[cell] > 0 ? day[cell].toLocaleString() : '-'}
+                      </td>
+                    ))}
+                    <td className="p-3 sm:p-4 font-bold text-primary text-center sticky right-0 z-10 border-l border-border" style={{ backgroundColor: 'var(--color-bg)' }}>
+                      {total > 0 ? total.toLocaleString() : '-'}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>

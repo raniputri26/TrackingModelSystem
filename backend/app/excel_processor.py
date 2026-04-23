@@ -51,8 +51,8 @@ def parse_tracking_excel(file_path: str, db: Session, sheet_name: str = "Summary
                 # Check background fill (to skip unreported/blacked-out cells)
                 if cell.fill and cell.fill.fgColor and cell.fill.fgColor.rgb:
                     fill_rgb = str(cell.fill.fgColor.rgb).upper()
-                    # Common black/dark color codes in Excel
-                    if fill_rgb in ('00000000', 'FF000000', '000000', 'FF000001'):
+                    # FF000000 is solid black. 00000000 is transparent/no-fill, do NOT skip transparent.
+                    if fill_rgb in ('FF000000', '000000', 'FF000001'):
                         is_black = True
             except:
                 pass
