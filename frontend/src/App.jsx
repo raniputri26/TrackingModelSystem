@@ -71,6 +71,10 @@ function App() {
     try {
       const res = await getHourlyDates();
       setHourlyDates(res.data);
+      // Set default filterValue if empty
+      if (res.data.length > 0 && !filterValue) {
+        setFilterValue(res.data[res.data.length - 1]);
+      }
     } catch (err) {
       console.error("Failed to fetch hourly dates", err);
     }
@@ -115,9 +119,9 @@ function App() {
     }
   }, [activeMenu, filterMode, filterValue]);
 
-  // Get unique dates based on active menu (Production vs Hourly)
+  // Get unique dates based on active menu (Production vs Hourly/Visitor)
   const availableDates = useMemo(() => {
-    if (activeMenu === 'hourly' || activeMenu === 'hourly_summary') {
+    if (activeMenu === 'hourly' || activeMenu === 'hourly_summary' || activeMenu === 'visitors') {
       return hourlyDates;
     }
     return [...new Set(data.map(d => d.date))].sort();

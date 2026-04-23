@@ -28,6 +28,25 @@ const VisitorAnalytics = ({ filterMode, filterValue }) => {
     return () => clearInterval(interval);
   }, [filterMode, filterValue]);
 
+  const groupedLogs = React.useMemo(() => {
+    if (!stats || !stats.recent_logs) return [];
+    
+    const groups = {};
+    stats.recent_logs.forEach(log => {
+      const key = `${log.ip}-${log.device}-${log.os}-${log.browser}`;
+      if (!groups[key]) {
+        groups[key] = { ...log, times: [] };
+      }
+      groups[key].times.push(log.time);
+    });
+    
+    return Object.values(groups).sort((a, b) => {
+      const latestA = new Date(a.times[0].replace(' ', 'T') + 'Z');
+      const latestB = new Date(b.times[0].replace(' ', 'T') + 'Z');
+      return latestB - latestA;
+    });
+  }, [stats]);
+
   if (loading && !stats) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -69,7 +88,7 @@ const VisitorAnalytics = ({ filterMode, filterValue }) => {
             <div className="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center text-purple-500">
               <Smartphone size={22} />
             </div>
-            <h3 className="text-sm font-bold text-text-muted uppercase tracking-wider">Mobile Users</h3>
+            <h3 className="text-sm font-bold text-text-muted uppercase tracking-wider">Mobile Visits</h3>
           </div>
           <p className="text-4xl font-bold text-white">
             {stats.devices.filter(d => d.name.includes('Mobile')).reduce((sum, d) => sum + d.value, 0).toLocaleString()}
@@ -81,7 +100,7 @@ const VisitorAnalytics = ({ filterMode, filterValue }) => {
             <div className="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-500">
               <Monitor size={22} />
             </div>
-            <h3 className="text-sm font-bold text-text-muted uppercase tracking-wider">Desktop Users</h3>
+            <h3 className="text-sm font-bold text-text-muted uppercase tracking-wider">Desktop Visits</h3>
           </div>
           <p className="text-4xl font-bold text-white">
             {stats.devices.filter(d => d.name.includes('Desktop')).reduce((sum, d) => sum + d.value, 0).toLocaleString()}
@@ -170,19 +189,22 @@ const VisitorAnalytics = ({ filterMode, filterValue }) => {
               </tr>
             </thead>
             <tbody>
-              {stats.recent_logs.map((log, idx) => (
+              {groupedLogs.map((log, idx) => (
                 <tr key={idx} className="border-b border-border/50 hover:bg-white/5 transition-colors">
-                  <td className="p-4 text-primary font-medium">
-                    {new Date(log.time.replace(' ', 'T') + 'Z').toLocaleString('en-GB', {
-                      day: '2-digit',
-                      month: '2-digit',
-                      year: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit',
-                      second: '2-digit'
-                    })}
+                  <td className="p-4 align-top">
+                    <div className="flex flex-wrap gap-1.5 max-w-[300px]">
+                      {log.times.map((time, tIdx) => (
+                        <span key={tIdx} className={`text-[11px] px-2 py-0.5 rounded font-medium ${tIdx === 0 ? 'bg-primary/20 text-primary border border-primary/30' : 'bg-surface-alt text-text-muted'}`}>
+                          {new Date(time.replace(' ', 'T') + 'Z').toLocaleTimeString('en-GB', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit'
+                          })}
+                        </span>
+                      ))}
+                    </div>
                   </td>
-                  <td className="p-4 text-text">
+                  <td className="p-4 text-text align-top">
                     <span className={`px-2 py-1 rounded text-xs font-bold ${
                       log.device === 'Mobile' ? 'bg-purple-500/20 text-purple-400' : 
                       log.device === 'Desktop' ? 'bg-emerald-500/20 text-emerald-400' : 
@@ -191,12 +213,21 @@ const VisitorAnalytics = ({ filterMode, filterValue }) => {
                       {log.device}
                     </span>
                   </td>
-                  <td className="p-4 text-text">{log.os}</td>
-                  <td className="p-4 text-text">{log.browser}</td>
-                  <td className="p-4 text-text-muted text-right font-mono text-xs">{log.ip}</td>
+                  <td className="p-4 text-text align-top">{log.os}</td>
+                  <td className="p-4 text-text align-top">{log.browser}</td>
+                  <td className="p-4 text-right align-top">
+                    <div className="flex flex-col items-end gap-1">
+                      <span className="font-mono text-xs text-white">{log.ip}</span>
+                      {log.times.length > 1 && (
+                        <span className="text-[10px] bg-white/10 text-text-muted px-1.5 py-0.5 rounded-full font-bold">
+                          {log.times.length} visits
+                        </span>
+                      )}
+                    </div>
+                  </td>
                 </tr>
               ))}
-              {stats.recent_logs.length === 0 && (
+              {groupedLogs.length === 0 && (
                 <tr>
                   <td colSpan="5" className="p-8 text-center text-text-muted">No recent activity found.</td>
                 </tr>
