@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Upload, Bell, Search, Filter, ChevronDown } from 'lucide-react';
+import { Upload, Bell, Search, ChevronDown } from 'lucide-react';
 
 const Header = ({ 
   title, subtitle, onUploadClick, 
@@ -8,7 +8,10 @@ const Header = ({
   availableDates,
   filterCell,
   onFilterCellChange,
-  availableCells
+  availableCells,
+  hideTabs,
+  hideSearch,
+  hideActionButtons
 }) => {
 
   // Generate week options from available dates
@@ -17,7 +20,6 @@ const Header = ({
     const weeks = {};
     availableDates.forEach(dateStr => {
       const d = new Date(dateStr);
-      // Get ISO week number
       const jan1 = new Date(d.getFullYear(), 0, 1);
       const weekNum = Math.ceil(((d - jan1) / 86400000 + jan1.getDay() + 1) / 7);
       const key = `${d.getFullYear()}-W${weekNum}`;
@@ -62,15 +64,17 @@ const Header = ({
         </div>
 
         <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full lg:w-auto">
-          {/* Search - Hidden on mobile to save space */}
-          <div className="hidden sm:flex relative glass-card px-3 py-2 items-center gap-2">
-            <Search className="text-text-muted" size={15} />
-            <input 
-              type="text" 
-              placeholder="Search..." 
-              className="bg-transparent border-none outline-none text-sm w-24 sm:w-32 text-white placeholder:text-text-muted"
-            />
-          </div>
+          {/* Search */}
+          {!hideSearch && (
+            <div className="hidden sm:flex relative glass-card px-3 py-2 items-center gap-2">
+              <Search className="text-text-muted" size={15} />
+              <input 
+                type="text" 
+                placeholder="Search..." 
+                className="bg-transparent border-none outline-none text-sm w-24 sm:w-32 text-white placeholder:text-text-muted"
+              />
+            </div>
+          )}
 
           {/* Filters Row */}
           <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 flex-1 sm:flex-none">
@@ -106,7 +110,7 @@ const Header = ({
             )}
 
             {/* Cell Filter */}
-            {availableCells && availableCells.length > 0 && (
+            {!hideTabs && availableCells && availableCells.length > 0 && (
               <div className="relative flex-1 sm:flex-none min-w-[80px] sm:border-l sm:border-border sm:pl-3">
                 <select
                   value={filterCell}
@@ -123,36 +127,38 @@ const Header = ({
             )}
           </div>
 
-          <div className="flex items-center gap-2">
-            <button className="glass-card p-1.5 sm:p-2 text-text-muted hover:text-white transition-colors">
-              <Bell size={16} />
-            </button>
+          {!hideActionButtons && (
+            <div className="flex items-center gap-2">
+              <button className="glass-card p-1.5 sm:p-2 text-text-muted hover:text-white transition-colors">
+                <Bell size={16} />
+              </button>
 
-            <button onClick={onUploadClick} className="btn-primary flex items-center justify-center gap-2 shrink-0 py-1.5 px-3 sm:py-2 sm:px-4">
-              <Upload size={14} className="sm:size-4" />
-              <span className="text-xs sm:text-sm font-bold">Import</span>
-            </button>
-          </div>
+              <button onClick={onUploadClick} className="btn-primary flex items-center justify-center gap-2 shrink-0 py-1.5 px-3 sm:py-2 sm:px-4">
+                <Upload size={14} className="sm:size-4" />
+                <span className="text-xs sm:text-sm font-bold">Import</span>
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
       {/* Category Tabs */}
-      {categories && categories.length > 0 && (
+      {!hideTabs && categories && categories.length > 0 && (
         <div className="flex overflow-x-auto hide-scrollbar border-b border-border/30 w-full lg:justify-center relative">
           <div className="flex gap-1 sm:gap-2 min-w-max pr-4">
             {categories.map(cat => (
-            <button
-              key={cat}
-              onClick={() => onSelectCategory(cat)}
-              className={`px-3 py-2 sm:px-5 sm:py-2.5 text-[10px] sm:text-sm font-bold rounded-t-lg transition-all border-b-2 whitespace-nowrap ${
-                activeCategory === cat
-                  ? 'border-primary text-primary bg-primary/5'
-                  : 'border-transparent text-text-muted hover:text-white hover:border-border'
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
+              <button
+                key={cat}
+                onClick={() => onSelectCategory(cat)}
+                className={`px-3 py-2 sm:px-5 sm:py-2.5 text-[10px] sm:text-sm font-bold rounded-t-lg transition-all border-b-2 whitespace-nowrap ${
+                  activeCategory === cat
+                    ? 'border-primary text-primary bg-primary/5'
+                    : 'border-transparent text-text-muted hover:text-white hover:border-border'
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
           </div>
         </div>
       )}

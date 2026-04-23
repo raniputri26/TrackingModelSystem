@@ -8,7 +8,8 @@ import UploadModal from './components/UploadModal';
 import HourlyLogs from './components/HourlyLogs';
 import HourlyDashboardChart from './components/HourlyDashboardChart';
 import HourlySummary from './components/HourlySummary';
-import { getCategories, getProductionData, getHourlyDates, getHourlyLogs } from './api';
+import VisitorAnalytics from './components/VisitorAnalytics';
+import { getCategories, getProductionData, getHourlyDates, getHourlyLogs, trackVisit } from './api';
 
 function App() {
   const [activeCategory, setActiveCategory] = useState('CUTTING + PREPARATION');
@@ -91,6 +92,7 @@ function App() {
 
   useEffect(() => {
     const init = async () => {
+      try { await trackVisit(); } catch (e) { console.error("Track visit failed", e); }
       await fetchCategories();
       await fetchData();
       await fetchHourlyDates();
@@ -235,11 +237,13 @@ function App() {
           {activeMenu !== 'hourly' && (
             <Header
               title={
+                activeMenu === 'visitors' ? 'Visitor Analytics' :
                 activeMenu === 'dashboard' ? 'Analytics Dashboard' :
                   activeMenu === 'hourly_summary' ? 'Hourly Performance Summary' :
                     'Production Tracking New Model'
               }
               subtitle={
+                activeMenu === 'visitors' ? 'Device & Traffic Tracking' :
                 activeMenu === 'dashboard' ? 'Performance Overview & Trends' :
                   activeMenu === 'hourly_summary' ? 'Live Aggregated Output Monitoring' :
                     'Production Monitoring'
@@ -256,6 +260,9 @@ function App() {
               filterCell={filterCell}
               onFilterCellChange={setFilterCell}
               availableCells={availableCells}
+              hideTabs={activeMenu === 'visitors'}
+              hideSearch={activeMenu === 'visitors'}
+              hideActionButtons={activeMenu === 'visitors'}
             />
           )}
         </div>
@@ -267,7 +274,12 @@ function App() {
             </div>
           ) : (
             <div className="space-y-10 animate-fade-in">
-              {activeMenu === 'hourly' ? (
+              {activeMenu === 'visitors' ? (
+                <VisitorAnalytics 
+                  filterMode={filterMode} 
+                  filterValue={filterValue} 
+                />
+              ) : activeMenu === 'hourly' ? (
                 <HourlyLogs />
               ) : activeMenu === 'hourly_summary' ? (
                 <HourlySummary

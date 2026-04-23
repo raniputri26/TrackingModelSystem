@@ -57,4 +57,13 @@ export const getHourlyTimeline = (params) => {
   return api.get('/hourly-timeline', { params });
 };
 
+// --- Visitor Analytics API ---
+export const trackVisit = () => {
+  return api.post('/track-visit');
+};
+
+export const getVisitorStats = (params) => {
+  return api.get('/visitors', { params });
+};
+
 export default api;

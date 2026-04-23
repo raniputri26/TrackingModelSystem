@@ -1,7 +1,7 @@
-from fastapi import FastAPI, UploadFile, File, Depends, HTTPException
+from fastapi import FastAPI, UploadFile, File, Depends, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-from sqlalchemy import func
+from sqlalchemy import func, extract
 import shutil
 import os
 from . import models, database, excel_processor
@@ -241,6 +241,134 @@ def get_hourly_timeline(category: Optional[str] = None, date_filter: Optional[da
 
 @app.get("/hourly-dates")
 def get_hourly_dates(db: Session = Depends(database.get_db)):
-    dates = db.query(models.HourlyProduction.date).distinct().all()
-    # Sort dates ascending so the newest is at the end
-    return sorted([d[0].isoformat() if hasattr(d[0], 'isoformat') else str(d[0]) for d in dates])
+    prod_dates = db.query(models.HourlyProduction.date).distinct().all()
+    visitor_dates = db.query(func.date(models.VisitorLog.visited_at)).distinct().all()
+    
+    all_dates = set()
+    for d in prod_dates:
+        all_dates.add(d[0].isoformat() if hasattr(d[0], 'isoformat') else str(d[0]))
+    for d in visitor_dates:
+        all_dates.add(d[0].isoformat() if hasattr(d[0], 'isoformat') else str(d[0]))
+        
+    return sorted(list(all_dates))
+
+# --- VISITOR ANALYTICS ENDPOINTS ---
+
+def parse_user_agent(ua_string: str):
+    ua_string = ua_string.lower() if ua_string else ""
+    
+    device_type = "Desktop"
+    if any(m in ua_string for m in ["mobi", "android", "iphone", "ipad", "windows phone"]):
+        device_type = "Mobile"
+        if "ipad" in ua_string or "tablet" in ua_string:
+            device_type = "Tablet"
+            
+    os = "Unknown OS"
+    if "windows" in ua_string: os = "Windows"
+    elif "mac os x" in ua_string: os = "macOS"
+    elif "android" in ua_string: os = "Android"
+    elif "iphone os" in ua_string or "ipad" in ua_string: os = "iOS"
+    elif "linux" in ua_string: os = "Linux"
+
+    browser = "Unknown Browser"
+    if "edg/" in ua_string: browser = "Edge"
+    elif "chrome/" in ua_string: browser = "Chrome"
+    elif "safari/" in ua_string and "chrome" not in ua_string: browser = "Safari"
+    elif "firefox/" in ua_string: browser = "Firefox"
+    elif "opera/" in ua_string or "opr/" in ua_string: browser = "Opera"
+    
+    return device_type, os, browser
+
+@app.post("/track-visit")
+async def track_visit(request: Request, db: Session = Depends(database.get_db)):
+    # Get IP Address (handling proxies if any)
+    ip_address = request.headers.get("X-Forwarded-For")
+    if ip_address:
+        ip_address = ip_address.split(",")[0].strip()
+    else:
+        ip_address = request.headers.get("X-Real-IP")
+        if not ip_address:
+            ip_address = request.client.host if request.client else "unknown"
+
+    user_agent = request.headers.get("User-Agent", "")
+    device_type, os, browser = parse_user_agent(user_agent)
+
+    from datetime import datetime
+    today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+    
+    log = models.VisitorLog(
+        ip_address=ip_address,
+        user_agent=user_agent[:500],
+        device_type=device_type,
+        os=os,
+        browser=browser
+    )
+    db.add(log)
+    db.commit()
+    return {"status": "tracked"}
+
+@app.get("/visitors")
+def get_visitors(
+    filter_mode: str = 'all', 
+    filter_value: str = '',
+    db: Session = Depends(database.get_db)
+):
+    query = db.query(models.VisitorLog)
+    
+    if filter_mode == 'day' and filter_value:
+        try:
+            query = query.filter(func.date(models.VisitorLog.visited_at) == filter_value)
+        except: pass
+    elif filter_mode == 'month' and filter_value:
+        try:
+            year, month = map(int, filter_value.split('-'))
+            query = query.filter(
+                extract('year', models.VisitorLog.visited_at) == year,
+                extract('month', models.VisitorLog.visited_at) == month
+            )
+        except: pass
+    elif filter_mode == 'week' and filter_value:
+        try:
+            year, week = map(int, filter_value.split('-W'))
+            import datetime as dt
+            # ISO week calculation
+            start_date = dt.datetime.strptime(f'{year}-W{week}-1', "%G-W%V-%u").date()
+            end_date = start_date + dt.timedelta(days=6)
+            query = query.filter(func.date(models.VisitorLog.visited_at).between(start_date, end_date))
+        except: pass
+
+    logs = query.order_by(models.VisitorLog.visited_at.desc()).all()
+    
+    total_views = len(logs)
+    unique_ips = len(set([log.ip_address for log in logs]))
+    
+    # Aggregate devices
+    devices = {}
+    for log in logs:
+        key = f"{log.device_type} - {log.os}"
+        if key not in devices:
+            devices[key] = 0
+        devices[key] += 1
+        
+    devices_arr = [{"name": k, "value": v} for k, v in devices.items()]
+    
+    # Trend
+    from collections import Counter
+    days = Counter([log.visited_at.strftime('%Y-%m-%d') for log in logs])
+    trend = [{"date": k, "visits": v} for k, v in sorted(days.items())]
+
+    return {
+        "total_views": total_views,
+        "unique_visitors": unique_ips,
+        "devices": sorted(devices_arr, key=lambda x: x['value'], reverse=True),
+        "trend": trend,
+        "recent_logs": [
+            {
+                "ip": log.ip_address,
+                "device": log.device_type,
+                "os": log.os,
+                "browser": log.browser,
+                "time": log.visited_at.strftime('%Y-%m-%d %H:%M:%S')
+            } for log in logs[:10]
+        ]
+    }

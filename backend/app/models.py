@@ -1,5 +1,6 @@
-from sqlalchemy import Column, Integer, String, Float, Date, UniqueConstraint
+from sqlalchemy import Column, Integer, String, Float, Date, DateTime, UniqueConstraint
 from .database import Base
+from datetime import datetime
 
 class ProductionData(Base):
     __tablename__ = "production_data"
@@ -35,3 +36,14 @@ class HourlyProduction(Base):
 
     # Ensure no duplicates for the exact same hour block in the same cell
     __table_args__ = (UniqueConstraint('category', 'cell', 'date', 'hour_range', name='_hourly_uc'),)
+
+class VisitorLog(Base):
+    __tablename__ = "visitor_logs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    ip_address = Column(String(50), index=True)
+    user_agent = Column(String(500))
+    device_type = Column(String(50)) # e.g., 'Mobile', 'Desktop', 'Tablet'
+    browser = Column(String(50))
+    os = Column(String(50))
+    visited_at = Column(DateTime, default=datetime.utcnow, index=True)

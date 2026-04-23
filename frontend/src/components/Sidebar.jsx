@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { LayoutDashboard, Activity, Clock, Pin, PinOff, BarChart3 } from 'lucide-react';
+import { LayoutDashboard, Activity, Clock, Pin, PinOff, BarChart3, Users } from 'lucide-react';
 
 const Sidebar = ({ activeMenu, onSelectMenu }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -74,6 +74,7 @@ const Sidebar = ({ activeMenu, onSelectMenu }) => {
             Hourly Summary
           </span>
         </button>
+
       </nav>
 
       {/* Footer Area */}
@@ -87,6 +88,17 @@ const Sidebar = ({ activeMenu, onSelectMenu }) => {
             <span className={`transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap text-sm font-medium ${isCollapsed ? 'max-w-0 opacity-0 ml-0' : 'max-w-[100px] opacity-100'}`}>
               Operational
             </span>
+            
+            {/* Small Visitor Analytics Link */}
+            {!isCollapsed && (
+              <button 
+                onClick={() => onSelectMenu('visitors')}
+                className={`ml-auto p-1.5 rounded-lg transition-all duration-200 hover:bg-white/10 ${activeMenu === 'visitors' ? 'text-primary bg-primary/10' : 'text-text-muted hover:text-white'}`}
+                title="Visitor Analytics"
+              >
+                <Users size={14} />
+              </button>
+            )}
           </div>
         </div>
       </div>
