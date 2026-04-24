@@ -10,7 +10,7 @@ const Sidebar = ({ activeMenu, onSelectMenu }) => {
       {/* Toggle Button */}
       <button
         onClick={() => setIsCollapsed(!isCollapsed)}
-        className="absolute right-4 top-8 text-text-muted hover:text-white transition-all z-20 hover:scale-110"
+        className="absolute right-4 top-8 text-text-muted hover:text-text transition-all z-20 hover:scale-110"
         title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
       >
         <Pin size={16} className={`transform transition-transform duration-300 ${isCollapsed ? 'rotate-45 text-primary' : 'rotate-0'}`} />
@@ -19,9 +19,9 @@ const Sidebar = ({ activeMenu, onSelectMenu }) => {
       {/* Logo Area */}
       <div className="flex items-center mb-12 mt-6 px-5 overflow-hidden">
         <div className="w-10 h-10 min-w-[2.5rem] bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">
-          <Activity className="text-bg w-6 h-6" />
+          <Activity className="text-white w-6 h-6" />
         </div>
-          <h1 className="text-xl font-bold tracking-tight">TRACKING</h1>
+          <h1 className="text-xl font-bold tracking-tight text-text">TRACKING</h1>
           <p className="text-[10px] text-primary font-bold tracking-widest uppercase">Model System</p>
       </div>
 
@@ -93,7 +93,7 @@ const Sidebar = ({ activeMenu, onSelectMenu }) => {
             {!isCollapsed && (
               <button 
                 onClick={() => onSelectMenu('visitors')}
-                className={`ml-auto p-1.5 rounded-lg transition-all duration-200 hover:bg-white/10 ${activeMenu === 'visitors' ? 'text-primary bg-primary/10' : 'text-text-muted hover:text-white'}`}
+                className={`ml-auto p-1.5 rounded-lg transition-all duration-200 hover:bg-white/10 ${activeMenu === 'visitors' ? 'text-primary bg-primary/10' : 'text-text-muted hover:text-text'}`}
                 title="Visitor Analytics"
               >
                 <Users size={14} />

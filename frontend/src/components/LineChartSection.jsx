@@ -180,12 +180,12 @@ const LineChartSection = ({ data, title }) => {
         <div className="overflow-x-auto hide-scrollbar">
           <table className="w-full text-left text-sm whitespace-nowrap">
             <thead>
-              <tr className="bg-surface-alt/50 border-b border-border">
-                <th className="p-3 sm:p-4 font-bold text-text-muted uppercase tracking-wider sticky left-0 z-10 border-r border-border min-w-[120px]" style={{ backgroundColor: 'var(--color-bg)' }}>Cell Name</th>
+              <tr style={{ backgroundColor: 'var(--color-table-header)' }} className="border-b border-border">
+                <th className="p-3 sm:p-4 font-bold text-[var(--color-table-header-text)] uppercase tracking-wider sticky left-0 z-10 border-r border-border min-w-[120px]" style={{ backgroundColor: 'var(--color-table-header)' }}>Cell Name</th>
                 {chartDataDay.map(day => (
-                  <th key={day.name} className="p-3 sm:p-4 font-bold text-text-muted text-center border-r border-border/30 min-w-[80px]">{day.name}</th>
+                  <th key={day.name} className="p-3 sm:p-4 font-bold text-[var(--color-table-header-text)] text-center border-r border-border/30 min-w-[80px]">{day.name}</th>
                 ))}
-                <th className="p-3 sm:p-4 font-bold text-text-muted uppercase tracking-wider text-center sticky right-0 z-10 border-l border-border min-w-[100px]" style={{ backgroundColor: 'var(--color-bg)' }}>Total</th>
+                <th className="p-3 sm:p-4 font-bold text-[var(--color-table-header-text)] uppercase tracking-wider text-center sticky right-0 z-10 border-l border-border min-w-[100px]" style={{ backgroundColor: 'var(--color-table-header)' }}>Total</th>
               </tr>
             </thead>
             <tbody>
@@ -193,7 +193,7 @@ const LineChartSection = ({ data, title }) => {
                 const total = chartDataDay.reduce((sum, day) => sum + (day[cell] || 0), 0);
                 return (
                   <tr key={cell} className="border-b border-border/50 hover:bg-white/5 transition-colors">
-                    <td className="p-3 sm:p-4 font-bold text-white sticky left-0 z-10 border-r border-border" style={{ backgroundColor: 'var(--color-bg)' }}>
+                    <td className="p-3 sm:p-4 font-bold text-text sticky left-0 z-10 border-r border-border" style={{ backgroundColor: 'var(--color-bg)' }}>
                       <div className="flex items-center gap-2">
                         <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: colors[idx % colors.length] }} />
                         {cell}

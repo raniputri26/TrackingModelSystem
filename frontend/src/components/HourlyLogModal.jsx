@@ -75,8 +75,8 @@ const HourlyLogModal = ({ onClose, onSuccess, editData }) => {
     }
   };
 
-  const selectClass = "w-full bg-surface-alt border border-border rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-primary transition-colors appearance-none cursor-pointer";
-  const inputClass = "w-full bg-surface-alt border border-border rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-primary transition-colors";
+  const selectClass = "w-full bg-surface-alt border border-border rounded-xl px-4 py-3 text-sm text-text outline-none focus:border-primary transition-colors appearance-none cursor-pointer";
+  const inputClass = "w-full bg-surface-alt border border-border rounded-xl px-4 py-3 text-sm text-text outline-none focus:border-primary transition-colors";
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
@@ -88,11 +88,11 @@ const HourlyLogModal = ({ onClose, onSuccess, editData }) => {
               <Clock className="text-primary" size={18} />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-white">{editData ? 'Edit Hourly Log' : 'Input Hourly Data'}</h3>
+              <h3 className="text-lg font-bold text-text">{editData ? 'Edit Hourly Log' : 'Input Hourly Data'}</h3>
               <p className="text-xs text-text-muted">{editData ? 'Perbarui data produksi' : 'Masukkan data produksi per jam'}</p>
             </div>
           </div>
-          <button onClick={onClose} className="text-text-muted hover:text-white transition-colors p-1">
+          <button onClick={onClose} className="text-text-muted hover:text-text transition-colors p-1">
             <X size={20} />
           </button>
         </div>
@@ -193,7 +193,7 @@ const HourlyLogModal = ({ onClose, onSuccess, editData }) => {
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 glass-card py-3 text-sm font-bold text-text-muted hover:text-white transition-colors rounded-xl"
+              className="flex-1 glass-card py-3 text-sm font-bold text-text-muted hover:text-text transition-colors rounded-xl"
             >
               Cancel
             </button>

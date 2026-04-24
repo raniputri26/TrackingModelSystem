@@ -149,7 +149,7 @@ const HourlySummary = ({ filterMode, filterValue, filterCell, activeCategory, ca
             <BarChart3 size={20} className="text-primary sm:size-[22px]" />
           </div>
           <div>
-            <h3 className="text-base sm:text-lg font-bold text-white leading-tight">Hourly Production Summary</h3>
+            <h3 className="text-base sm:text-lg font-bold text-text leading-tight">Hourly Production Summary</h3>
             <p className="text-[10px] sm:text-xs text-text-muted">Aggregated total output from hourly logs</p>
           </div>
         </div>
@@ -162,12 +162,12 @@ const HourlySummary = ({ filterMode, filterValue, filterCell, activeCategory, ca
         <table className="data-grid min-w-[800px] sm:min-w-full">
           <thead>
             <tr>
-              <th className="py-4 px-4 sm:px-6 text-left text-[10px] sm:text-xs font-bold text-text-muted uppercase tracking-widest sticky left-0 z-10 bg-surface-alt/95 backdrop-blur-sm">Cell Name</th>
-              <th className="py-4 px-4 sm:px-6 text-right text-[10px] sm:text-xs font-bold text-text-muted uppercase tracking-widest">Cutting + Prep</th>
-              <th className="py-4 px-4 sm:px-6 text-right text-[10px] sm:text-xs font-bold text-text-muted uppercase tracking-widest">Comp Stitching</th>
-              <th className="py-4 px-4 sm:px-6 text-right text-[10px] sm:text-xs font-bold text-text-muted uppercase tracking-widest">Sewing</th>
-              <th className="py-4 px-4 sm:px-6 text-right text-[10px] sm:text-xs font-bold text-text-muted uppercase tracking-widest">Assembly</th>
-              <th className="py-4 px-4 sm:px-6 text-right text-[10px] sm:text-xs font-bold text-primary uppercase tracking-widest border-l border-border/50 sticky right-0 z-10 bg-surface-alt/95 backdrop-blur-sm">Total Output</th>
+              <th className="py-4 px-4 sm:px-6 text-left text-[10px] sm:text-xs font-bold uppercase tracking-widest sticky left-0 z-10 backdrop-blur-sm">Cell Name</th>
+              <th className="py-4 px-4 sm:px-6 text-right text-[10px] sm:text-xs font-bold uppercase tracking-widest">Cutting + Prep</th>
+              <th className="py-4 px-4 sm:px-6 text-right text-[10px] sm:text-xs font-bold uppercase tracking-widest">Comp Stitching</th>
+              <th className="py-4 px-4 sm:px-6 text-right text-[10px] sm:text-xs font-bold uppercase tracking-widest">Sewing</th>
+              <th className="py-4 px-4 sm:px-6 text-right text-[10px] sm:text-xs font-bold uppercase tracking-widest">Assembly</th>
+              <th className="py-4 px-4 sm:px-6 text-right text-[10px] sm:text-xs font-bold text-primary uppercase tracking-widest border-l border-border/50 sticky right-0 z-10 backdrop-blur-sm">Total Output</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border/50">
@@ -199,22 +199,22 @@ const HourlySummary = ({ filterMode, filterValue, filterCell, activeCategory, ca
                     </span>
                   </td>
                   <td className="py-4 px-4 sm:px-6 text-right">
-                    <span className={`text-xs sm:text-sm font-bold ${row['CUTTING + PREPARATION'] > 0 ? 'text-white' : 'text-text-muted/30'}`}>
+                    <span className={`text-xs sm:text-sm font-bold ${row['CUTTING + PREPARATION'] > 0 ? 'text-text' : 'text-text-muted/30'}`}>
                       {row['CUTTING + PREPARATION'] ? row['CUTTING + PREPARATION'].toLocaleString() : '0'}
                     </span>
                   </td>
                   <td className="py-4 px-4 sm:px-6 text-right">
-                    <span className={`text-xs sm:text-sm font-bold ${row['COMPUTER STITCHING'] > 0 ? 'text-white' : 'text-text-muted/30'}`}>
+                    <span className={`text-xs sm:text-sm font-bold ${row['COMPUTER STITCHING'] > 0 ? 'text-text' : 'text-text-muted/30'}`}>
                       {row['COMPUTER STITCHING'] ? row['COMPUTER STITCHING'].toLocaleString() : '0'}
                     </span>
                   </td>
                   <td className="py-4 px-4 sm:px-6 text-right">
-                    <span className={`text-xs sm:text-sm font-bold ${row['SEWING'] > 0 ? 'text-white' : 'text-text-muted/30'}`}>
+                    <span className={`text-xs sm:text-sm font-bold ${row['SEWING'] > 0 ? 'text-text' : 'text-text-muted/30'}`}>
                       {row['SEWING'] ? row['SEWING'].toLocaleString() : '0'}
                     </span>
                   </td>
                   <td className="py-4 px-4 sm:px-6 text-right">
-                    <span className={`text-xs sm:text-sm font-bold ${row['ASSEMBLY'] > 0 ? 'text-white' : 'text-text-muted/30'}`}>
+                    <span className={`text-xs sm:text-sm font-bold ${row['ASSEMBLY'] > 0 ? 'text-text' : 'text-text-muted/30'}`}>
                       {row['ASSEMBLY'] ? row['ASSEMBLY'].toLocaleString() : '0'}
                     </span>
                   </td>
@@ -231,7 +231,7 @@ const HourlySummary = ({ filterMode, filterValue, filterCell, activeCategory, ca
           </tbody>
           {data.length > 0 && (
             <tfoot className="bg-surface-alt/50 border-t border-border">
-              <tr className="font-black text-white">
+              <tr className="font-black text-text">
                 <td className="py-5 px-6 uppercase text-xs tracking-widest text-text-muted">Total Overall</td>
                 <td className="py-5 px-6 text-right text-sm">
                   {data.reduce((acc, r) => acc + (r['CUTTING + PREPARATION'] || 0), 0).toLocaleString()}

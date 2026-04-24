@@ -96,7 +96,7 @@ const HourlyTimeline = ({ filterMode, filterValue, filterCell, category, title =
             <Clock size={18} className="text-primary sm:size-[22px]" />
           </div>
           <div className="min-w-0">
-            <h3 className="text-sm sm:text-lg font-bold text-white truncate">{title}</h3>
+            <h3 className="text-sm sm:text-lg font-bold text-text truncate">{title}</h3>
             <p className="text-[9px] sm:text-xs text-text-muted truncate">Output breakdown per hour</p>
           </div>
         </div>
@@ -115,12 +115,12 @@ const HourlyTimeline = ({ filterMode, filterValue, filterCell, category, title =
       <div className="overflow-x-auto relative scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent touch-pan-x">
         <table className="w-full text-sm border-separate border-spacing-0">
           <thead>
-            <tr className="bg-surface-alt/50">
-              <th className="sticky left-0 z-30 bg-surface-alt/95 backdrop-blur-md py-4 px-4 sm:px-6 text-left text-[10px] font-bold text-text-muted uppercase tracking-widest border-b border-r border-border min-w-[100px] sm:min-w-[140px]">
+            <tr style={{ backgroundColor: 'var(--color-table-header)' }}>
+              <th className="sticky left-0 z-30 py-4 px-4 sm:px-6 text-left text-[10px] font-bold text-[var(--color-table-header-text)] uppercase tracking-widest border-b border-r border-border min-w-[100px] sm:min-w-[140px]" style={{ backgroundColor: 'var(--color-table-header)' }}>
                 Cell Name
               </th>
               {HOUR_COLUMNS.map(hour => (
-                <th key={hour} className="py-4 px-2 sm:px-4 text-center text-[10px] font-bold text-text-muted uppercase tracking-widest border-b border-border min-w-[80px] sm:min-w-[100px]">
+                <th key={hour} className="py-4 px-2 sm:px-4 text-center text-[10px] font-bold text-[var(--color-table-header-text)] uppercase tracking-widest border-b border-border min-w-[80px] sm:min-w-[100px]">
                   <span className="block sm:hidden">{hour.split(' - ')[0]}</span>
                   <span className="hidden sm:block">{hour}</span>
                 </th>
@@ -150,7 +150,7 @@ const HourlyTimeline = ({ filterMode, filterValue, filterCell, category, title =
               data.map((row, idx) => (
                 <tr key={row.cell} className="hover:bg-white/[0.02] transition-colors group">
                   <td className="sticky left-0 z-20 bg-bg/95 group-hover:bg-surface-alt/80 backdrop-blur-sm py-3 sm:py-4 px-4 sm:px-6 border-r border-border transition-colors">
-                    <span className="text-xs sm:text-sm font-black text-white group-hover:text-primary-light transition-colors uppercase whitespace-nowrap">
+                    <span className="text-xs sm:text-sm font-black text-text group-hover:text-primary-light transition-colors uppercase whitespace-nowrap">
                       {row.cell}
                     </span>
                   </td>
@@ -179,13 +179,13 @@ const HourlyTimeline = ({ filterMode, filterValue, filterCell, category, title =
           {data.length > 0 && (
             <tfoot className="bg-surface-alt/30 border-t-2 border-border">
               <tr className="font-bold">
-                <td className="sticky left-0 z-30 bg-surface-alt/95 backdrop-blur-md py-4 sm:py-5 px-4 sm:px-6 text-[10px] uppercase tracking-widest text-text-muted border-r border-border">
+                <td className="sticky left-0 z-30 py-4 sm:py-5 px-4 sm:px-6 text-[10px] uppercase tracking-widest text-text-muted border-r border-border" style={{ backgroundColor: 'var(--color-table-header)' }}>
                   Hourly Total
                 </td>
                 {HOUR_COLUMNS.map(hour => {
                   const hourlyTotal = data.reduce((acc, r) => acc + (r[hour]?.total || 0), 0);
                   return (
-                    <td key={hour} className="py-4 sm:py-5 px-2 sm:px-4 text-center text-xs sm:text-sm text-white border-r border-border/30 last:border-r-0">
+                    <td key={hour} className="py-4 sm:py-5 px-2 sm:px-4 text-center text-xs sm:text-sm text-text border-r border-border/30 last:border-r-0">
                       {hourlyTotal.toLocaleString()}
                     </td>
                   );

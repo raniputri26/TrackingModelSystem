@@ -24,6 +24,23 @@ function App() {
   const [filterValue, setFilterValue] = useState('');
   const [filterCell, setFilterCell] = useState('all');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark');
+
+  // Theme effect
+  useEffect(() => {
+    if (theme === 'light') {
+      document.documentElement.classList.add('light');
+      document.body.classList.add('light');
+    } else {
+      document.documentElement.classList.remove('light');
+      document.body.classList.remove('light');
+    }
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+  };
 
   // Fixed category order
   const CATEGORY_ORDER = [
@@ -214,7 +231,7 @@ function App() {
       {/* Mobile Hamburger Button */}
       <button
         onClick={() => setIsMobileMenuOpen(true)}
-        className={`lg:hidden absolute top-5 left-4 z-30 bg-surface-strong border border-border p-2 rounded-xl shadow-[0_4px_16px_rgba(0,0,0,0.5)] text-text hover:text-white hover:border-primary/50 transition-all focus:outline-none ${isMobileMenuOpen ? 'opacity-0 scale-90 pointer-events-none' : 'opacity-100 scale-100'}`}
+        className={`lg:hidden absolute top-5 left-4 z-30 bg-surface-strong border border-border p-2 rounded-xl shadow-lg text-text hover:text-primary transition-all focus:outline-none ${isMobileMenuOpen ? 'opacity-0 scale-90 pointer-events-none' : 'opacity-100 scale-100'}`}
       >
         <Menu size={22} />
       </button>
@@ -267,6 +284,8 @@ function App() {
               hideTabs={activeMenu === 'visitors'}
               hideSearch={activeMenu === 'visitors'}
               hideActionButtons={activeMenu === 'visitors'}
+              theme={theme}
+              toggleTheme={toggleTheme}
             />
           )}
         </div>

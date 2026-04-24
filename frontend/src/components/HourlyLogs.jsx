@@ -12,10 +12,10 @@ const CATEGORY_ORDER = [
 ];
 
 const CATEGORY_COLORS = {
-  'CUTTING + PREPARATION': { bg: 'bg-cyan-500/10', text: 'text-cyan-400', border: 'border-cyan-500/30', accent: '#06b6d4' },
-  'COMPUTER STITCHING': { bg: 'bg-violet-500/10', text: 'text-violet-400', border: 'border-violet-500/30', accent: '#8b5cf6' },
-  'SEWING': { bg: 'bg-emerald-500/10', text: 'text-emerald-400', border: 'border-emerald-500/30', accent: '#10b981' },
-  'ASSEMBLY': { bg: 'bg-amber-500/10', text: 'text-amber-400', border: 'border-amber-500/30', accent: '#f59e0b' },
+  'CUTTING + PREPARATION': { bg: 'bg-primary/10', text: 'text-[var(--color-cat-cyan)]', border: 'border-primary/20', accent: 'var(--color-cat-cyan)' },
+  'COMPUTER STITCHING': { bg: 'bg-indigo-500/10', text: 'text-[var(--color-cat-violet)]', border: 'border-indigo-500/20', accent: 'var(--color-cat-violet)' },
+  'SEWING': { bg: 'bg-emerald-500/10', text: 'text-[var(--color-cat-emerald)]', border: 'border-emerald-500/20', accent: 'var(--color-cat-emerald)' },
+  'ASSEMBLY': { bg: 'bg-amber-500/10', text: 'text-[var(--color-cat-amber)]', border: 'border-amber-500/20', accent: 'var(--color-cat-amber)' },
 };
 
 const HOUR_ORDER = [
@@ -249,7 +249,7 @@ const HourlyLogs = () => {
         <div className="flex items-center justify-between gap-2">
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <h2 className="text-lg sm:text-2xl font-extrabold tracking-tight text-white leading-tight truncate">Hourly Output 603</h2>
+            <h2 className="text-lg sm:text-2xl font-extrabold tracking-tight text-text leading-tight truncate">Hourly Output 603</h2>
               <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
                 <span className="relative flex h-1.5 w-1.5">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -278,7 +278,7 @@ const HourlyLogs = () => {
             </div>
             <div className="min-w-0">
               <p className="text-[9px] sm:text-xs text-text-muted font-bold uppercase tracking-wider truncate">Total Output</p>
-              <p className="text-sm sm:text-xl font-extrabold text-white truncate">{stats.totalOutput.toLocaleString()}</p>
+              <p className="text-sm sm:text-xl font-extrabold text-text truncate">{stats.totalOutput.toLocaleString()}</p>
             </div>
           </div>
           <div className="glass-card p-2 sm:p-4 flex items-center gap-2 sm:gap-4">
@@ -305,13 +305,13 @@ const HourlyLogs = () => {
             </div>
             <div className="min-w-0">
               <p className="text-[9px] sm:text-xs text-text-muted font-bold uppercase tracking-wider truncate">Records</p>
-              <p className="text-sm sm:text-xl font-extrabold text-white truncate">{stats.totalRecords}</p>
+              <p className="text-sm sm:text-xl font-extrabold text-text truncate">{stats.totalRecords}</p>
             </div>
           </div>
         </div>
 
         {/* Filters - Scrollable on Mobile to prevent clipping */}
-        <div className="glass-card p-2 sm:p-4 flex items-center gap-2 sm:gap-4 border border-border bg-bg relative shadow-lg shadow-black overflow-x-auto hide-scrollbar">
+        <div className="glass-card p-2 sm:p-4 flex items-center gap-2 sm:gap-4 border border-border bg-surface relative shadow-lg overflow-x-auto hide-scrollbar">
           <div className="flex items-center gap-1.5 text-text-muted text-[10px] shrink-0 lg:flex">
             <Filter size={12} className="text-primary" />
             <span className="font-bold uppercase tracking-wider">Filter</span>
@@ -365,7 +365,7 @@ const HourlyLogs = () => {
             <div className="flex items-center gap-3">
               <div className="w-1.5 h-6 rounded-full bg-primary" />
               <div>
-                <h3 className="text-sm sm:text-base font-bold text-white uppercase tracking-wide flex items-center gap-2">
+                <h3 className="text-sm sm:text-base font-bold text-text uppercase tracking-wide flex items-center gap-2">
                   Hourly Performance Visualizer
                   <span className="text-[10px] font-normal text-text-muted normal-case ml-2">Target: 120/hr</span>
                 </h3>
@@ -399,7 +399,7 @@ const HourlyLogs = () => {
                       setCycleIndex(0);
                     }
                   }}
-                  className="bg-surface-alt border border-border rounded-xl pl-3 pr-8 py-2 text-[10px] font-bold text-white appearance-none cursor-pointer outline-none focus:border-primary transition-all min-w-[170px]"
+                  className="bg-surface-alt border border-border rounded-xl pl-3 pr-8 py-2 text-[10px] font-bold text-text appearance-none cursor-pointer outline-none focus:border-primary transition-all min-w-[170px]"
                 >
                   <option value="auto">🔄 Auto Rotate Sequence</option>
                   <option value="all">📊 Show Summed Total</option>
@@ -485,7 +485,7 @@ const HourlyLogs = () => {
                   <LabelList 
                     dataKey="output" 
                     position="top" 
-                    fill="#FFFFFF" 
+                    fill="var(--color-text)" 
                     fontSize={10} 
                     fontWeight="bold" 
                     offset={8}
@@ -517,14 +517,14 @@ const HourlyLogs = () => {
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-2 sm:px-0">
                     <div className="flex items-center gap-3">
                       <div className={`w-1.5 h-6 sm:h-8 rounded-full`} style={{ backgroundColor: color.accent }} />
-                      <h3 className="text-sm sm:text-base font-bold text-white uppercase tracking-wide">{category}</h3>
+                      <h3 className="text-sm sm:text-base font-bold text-text uppercase tracking-wide">{category}</h3>
                       <span className={`text-[9px] sm:text-[10px] font-bold uppercase tracking-widest px-2 sm:px-2.5 py-1 rounded-lg ${color.bg} ${color.text} border ${color.border}`}>
                         {catLogs.length}
                       </span>
                     </div>
                     {catLogs.length > 0 && (
                       <div className="flex items-center gap-4 text-[11px] sm:text-xs text-text-muted pl-4 sm:pl-0">
-                        <span>Total Output: <strong className="text-white">{catTotalOutput.toLocaleString()}</strong></span>
+                        <span>Total Output: <strong className="text-text">{catTotalOutput.toLocaleString()}</strong></span>
                       </div>
                     )}
                   </div>
@@ -533,22 +533,22 @@ const HourlyLogs = () => {
                   <div className={`glass-card overflow-hidden border ${color.border}`}>
                     <div className="overflow-x-auto overflow-y-auto max-h-[420px]">
                       <table className="w-full text-sm relative">
-                        <thead className="sticky top-0 z-10 shadow-sm" style={{ backgroundColor: '#0f172a' }}>
+                        <thead className="sticky top-0 z-10 shadow-sm" style={{ backgroundColor: 'var(--color-table-header)' }}>
                           <tr className="border-b border-border">
-                            <th className="text-left py-3 px-4 text-text-muted font-bold text-[11px] uppercase tracking-wider">Date</th>
-                            <th className="text-left py-3 px-4 text-text-muted font-bold text-[11px] uppercase tracking-wider">Cell</th>
-                            <th className="text-left py-3 px-4 text-text-muted font-bold text-[11px] uppercase tracking-wider">
+                            <th className="text-left py-3 px-4 text-[var(--color-table-header-text)] font-bold text-[11px] uppercase tracking-wider">Date</th>
+                            <th className="text-left py-3 px-4 text-[var(--color-table-header-text)] font-bold text-[11px] uppercase tracking-wider">Cell</th>
+                            <th className="text-left py-3 px-4 text-[var(--color-table-header-text)] font-bold text-[11px] uppercase tracking-wider">
                               <div className="flex items-center gap-1.5">
                                 <Clock size={12} className="text-primary" />
                                 Hour
                               </div>
                             </th>
-                            <th className="text-right py-3 px-4 text-text-muted font-bold text-[11px] uppercase tracking-wider">Output</th>
-                            <th className="text-right py-3 px-4 text-text-muted font-bold text-[11px] uppercase tracking-wider">B Grade</th>
-                            <th className="text-right py-3 px-4 text-text-muted font-bold text-[11px] uppercase tracking-wider">C Grade</th>
-                            <th className="text-right py-3 px-4 text-text-muted font-bold text-[11px] uppercase tracking-wider">Output / Target</th>
-                            <th className="text-left py-3 px-4 text-text-muted font-bold text-[11px] uppercase tracking-wider min-w-[120px]">Note</th>
-                            <th className="text-center py-3 px-4 text-text-muted font-bold text-[11px] uppercase tracking-wider w-24">Actions</th>
+                            <th className="text-right py-3 px-4 text-[var(--color-table-header-text)] font-bold text-[11px] uppercase tracking-wider">Output</th>
+                            <th className="text-right py-3 px-4 text-[var(--color-table-header-text)] font-bold text-[11px] uppercase tracking-wider">B Grade</th>
+                            <th className="text-right py-3 px-4 text-[var(--color-table-header-text)] font-bold text-[11px] uppercase tracking-wider">C Grade</th>
+                            <th className="text-right py-3 px-4 text-[var(--color-table-header-text)] font-bold text-[11px] uppercase tracking-wider">Output / Target</th>
+                            <th className="text-left py-3 px-4 text-[var(--color-table-header-text)] font-bold text-[11px] uppercase tracking-wider min-w-[120px]">Note</th>
+                            <th className="text-center py-3 px-4 text-[var(--color-table-header-text)] font-bold text-[11px] uppercase tracking-wider w-24">Actions</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -569,14 +569,14 @@ const HourlyLogs = () => {
                                     {new Date(log.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}
                                   </td>
                                   <td className="py-2.5 px-4">
-                                    <span className="text-[13px] font-semibold text-white">{log.cell}</span>
+                                    <span className="text-[13px] font-semibold text-text">{log.cell}</span>
                                   </td>
                                   <td className="py-2.5 px-4">
                                     <span className={`text-[11px] font-bold px-2.5 py-1 rounded-md ${color.bg} ${color.text}`}>
                                       {log.hour_range}
                                     </span>
                                   </td>
-                                  <td className="py-2.5 px-4 text-right text-[13px] font-bold text-white">{log.output.toLocaleString()}</td>
+                                  <td className="py-2.5 px-4 text-right text-[13px] font-bold text-text">{log.output.toLocaleString()}</td>
                                   <td className="py-2.5 px-4 text-right text-[13px]">
                                     <span className={`font-bold ${log.b_grade > 0 ? 'text-amber-400' : 'text-text-muted/40'}`}>
                                       {log.b_grade}

@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Upload, Bell, Search, ChevronDown } from 'lucide-react';
+import { Upload, Bell, Search, ChevronDown, Sun, Moon } from 'lucide-react';
 
 const Header = ({ 
   title, subtitle, onUploadClick, 
@@ -11,7 +11,9 @@ const Header = ({
   availableCells,
   hideTabs,
   hideSearch,
-  hideActionButtons
+  hideActionButtons,
+  theme,
+  toggleTheme
 }) => {
 
   // Generate week options from available dates
@@ -59,7 +61,7 @@ const Header = ({
       {/* Top bar */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 lg:gap-0">
         <div className="w-full lg:w-auto">
-          <h2 className="text-xl sm:text-3xl font-extrabold tracking-tight text-white leading-tight sm:mb-1">{title}</h2>
+          <h2 className="text-xl sm:text-3xl font-extrabold tracking-tight text-text leading-tight sm:mb-1">{title}</h2>
           <p className="text-[10px] sm:text-sm text-text-muted font-medium">{subtitle}</p>
         </div>
 
@@ -71,7 +73,7 @@ const Header = ({
               <input 
                 type="text" 
                 placeholder="Search..." 
-                className="bg-transparent border-none outline-none text-sm w-24 sm:w-32 text-white placeholder:text-text-muted"
+                className="bg-transparent border-none outline-none text-sm w-24 sm:w-32 text-text placeholder:text-text-muted"
               />
             </div>
           )}
@@ -83,7 +85,7 @@ const Header = ({
               <select
                 value={filterMode}
                 onChange={(e) => onFilterModeChange(e.target.value)}
-                className="w-full glass-card pl-3 pr-7 py-1.5 text-[10px] sm:text-sm font-bold appearance-none cursor-pointer bg-surface-alt border border-border rounded-xl outline-none focus:border-primary transition-colors"
+                className="w-full glass-card pl-3 pr-7 py-1.5 text-[10px] sm:text-sm font-bold appearance-none cursor-pointer bg-surface-alt border border-border rounded-xl outline-none focus:border-primary transition-colors text-text"
               >
                 <option value="all">All</option>
                 <option value="day">Day</option>
@@ -99,7 +101,7 @@ const Header = ({
                 <select
                   value={filterValue}
                   onChange={(e) => onFilterValueChange(e.target.value)}
-                  className="w-full glass-card px-3 pr-7 py-1.5 text-[10px] sm:text-sm appearance-none cursor-pointer bg-surface-alt border border-border rounded-xl outline-none focus:border-primary transition-colors truncate"
+                  className="w-full glass-card px-3 pr-7 py-1.5 text-[10px] sm:text-sm appearance-none cursor-pointer bg-surface-alt border border-border rounded-xl outline-none focus:border-primary transition-colors truncate text-text"
                 >
                   {filterMode === 'day' && dateOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
                   {filterMode === 'week' && weekOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
@@ -115,7 +117,7 @@ const Header = ({
                 <select
                   value={filterCell}
                   onChange={(e) => onFilterCellChange(e.target.value)}
-                  className="w-full glass-card px-3 pr-7 py-1.5 text-[10px] sm:text-sm appearance-none cursor-pointer bg-surface-alt border border-border rounded-xl outline-none focus:border-primary transition-colors truncate"
+                  className="w-full glass-card px-3 pr-7 py-1.5 text-[10px] sm:text-sm appearance-none cursor-pointer bg-surface-alt border border-border rounded-xl outline-none focus:border-primary transition-colors truncate text-text"
                 >
                   <option value="all">Cells</option>
                   {availableCells.map(cell => (
@@ -127,18 +129,29 @@ const Header = ({
             )}
           </div>
 
-          {!hideActionButtons && (
-            <div className="flex items-center gap-2">
-              <button className="glass-card p-1.5 sm:p-2 text-text-muted hover:text-white transition-colors">
-                <Bell size={16} />
-              </button>
+          <div className="flex items-center gap-2">
+            {/* Theme Toggle */}
+            <button 
+              onClick={toggleTheme}
+              className="glass-card p-1.5 sm:p-2 text-text-muted hover:text-primary transition-all hover:scale-110 active:scale-95"
+              title={theme === 'dark' ? "Switch to Light Mode" : "Switch to Dark Mode"}
+            >
+              {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+            </button>
 
-              <button onClick={onUploadClick} className="btn-primary flex items-center justify-center gap-2 shrink-0 py-1.5 px-3 sm:py-2 sm:px-4">
-                <Upload size={14} className="sm:size-4" />
-                <span className="text-xs sm:text-sm font-bold">Import</span>
-              </button>
-            </div>
-          )}
+            {!hideActionButtons && (
+              <>
+                <button className="glass-card p-1.5 sm:p-2 text-text-muted hover:text-text transition-colors">
+                  <Bell size={16} />
+                </button>
+
+                <button onClick={onUploadClick} className="btn-primary flex items-center justify-center gap-2 shrink-0 py-1.5 px-3 sm:py-2 sm:px-4">
+                  <Upload size={14} className="sm:size-4" />
+                  <span className="text-xs sm:text-sm font-bold">Import</span>
+                </button>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
