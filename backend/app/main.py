@@ -170,7 +170,9 @@ def get_hourly_summary(date_filter: Optional[date] = None, month_filter: Optiona
     query = db.query(
         models.HourlyProduction.cell,
         models.HourlyProduction.category,
-        func.sum(models.HourlyProduction.output + models.HourlyProduction.b_grade + models.HourlyProduction.c_grade).label('total_output')
+        func.sum(models.HourlyProduction.output + models.HourlyProduction.b_grade + models.HourlyProduction.c_grade).label('total_output'),
+        func.sum(models.HourlyProduction.b_grade).label('total_b_grade'),
+        func.sum(models.HourlyProduction.c_grade).label('total_c_grade')
     )
     
     if date_filter:
@@ -183,11 +185,13 @@ def get_hourly_summary(date_filter: Optional[date] = None, month_filter: Optiona
     
     # Pivot the data
     summary_map = {}
-    for cell, category, total in results:
+    for cell, category, total, b_grade, c_grade in results:
         if cell not in summary_map:
-            summary_map[cell] = {"cell": cell, "total_all": 0}
+            summary_map[cell] = {"cell": cell, "total_all": 0, "total_b_grade": 0, "total_c_grade": 0}
         summary_map[cell][category] = total
         summary_map[cell]["total_all"] += total
+        summary_map[cell]["total_b_grade"] += (b_grade or 0)
+        summary_map[cell]["total_c_grade"] += (c_grade or 0)
         
     return sorted(list(summary_map.values()), key=lambda x: x['cell'])
 
