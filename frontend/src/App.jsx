@@ -4,6 +4,7 @@ import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import DashboardGrid from './components/DashboardGrid';
 import LineChartSection from './components/LineChartSection';
+import AllCategoryDashboardTable from './components/AllCategoryDashboardTable';
 import UploadModal from './components/UploadModal';
 import HourlyLogs from './components/HourlyLogs';
 import HourlyDashboardChart from './components/HourlyDashboardChart';
@@ -55,17 +56,17 @@ function App() {
       const res = await getCategories();
       // Start with ALL CATEGORY
       const sorted = ['ALL CATEGORY'];
-      
+
       // Add standard categories in fixed order
       CATEGORY_ORDER.forEach(c => {
         if (res.data.includes(c)) sorted.push(c);
       });
 
       // Add any other categories from DB
-      res.data.forEach(c => { 
-        if (!sorted.includes(c)) sorted.push(c); 
+      res.data.forEach(c => {
+        if (!sorted.includes(c)) sorted.push(c);
       });
-      
+
       setCategories(sorted);
     } catch (err) {
       console.error("Failed to fetch categories", err);
@@ -103,7 +104,7 @@ function App() {
       if (filterMode === 'day') params.date_filter = filterValue;
       // Note: Backend might need update for month_filter in hourly-logs if needed, 
       // but for now we focus on daily snapshot as requested by user.
-      
+
       const res = await getHourlyLogs(params);
       setHourlyDashboardData(res.data);
     } catch (err) {
@@ -156,7 +157,7 @@ function App() {
       if (idxA !== -1 && idxB !== -1) return idxA - idxB;
       if (idxA !== -1) return -1;
       if (idxB !== -1) return 1;
-      
+
       const numA = parseInt(a.replace(/\D/g, ''), 10) || 0;
       const numB = parseInt(b.replace(/\D/g, ''), 10) || 0;
       return numA - numB || a.localeCompare(b);
@@ -243,7 +244,7 @@ function App() {
           onSelectMenu={(menu) => {
             setActiveMenu(menu);
             setIsMobileMenuOpen(false); // Auto close on mobile
-            
+
             // Set default filters for Hourly Summary
             if (menu === 'hourly_summary') {
               setFilterMode('day');
@@ -259,15 +260,15 @@ function App() {
             <Header
               title={
                 activeMenu === 'visitors' ? 'Visitor Analytics' :
-                activeMenu === 'dashboard' ? 'Analytics Dashboard' :
-                  activeMenu === 'hourly_summary' ? 'Hourly Performance Summary' :
-                    'Production Tracking New Model'
+                  activeMenu === 'dashboard' ? 'Analytics Dashboard' :
+                    activeMenu === 'hourly_summary' ? 'Hourly Performance Summary' :
+                      'Production Tracking New Model'
               }
               subtitle={
                 activeMenu === 'visitors' ? 'Device & Traffic Tracking' :
-                activeMenu === 'dashboard' ? 'Performance Overview & Trends' :
-                  activeMenu === 'hourly_summary' ? 'Live Aggregated Output Monitoring' :
-                    'Production Monitoring'
+                  activeMenu === 'dashboard' ? 'Performance Overview & Trends' :
+                    activeMenu === 'hourly_summary' ? 'Live Aggregated Output Monitoring' :
+                      'Production Monitoring'
               }
               onUploadClick={() => setIsUploadOpen(true)}
               categories={categories}
@@ -298,9 +299,9 @@ function App() {
           ) : (
             <div className="space-y-10 animate-fade-in">
               {activeMenu === 'visitors' ? (
-                <VisitorAnalytics 
-                  filterMode={filterMode} 
-                  filterValue={filterValue} 
+                <VisitorAnalytics
+                  filterMode={filterMode}
+                  filterValue={filterValue}
                 />
               ) : activeMenu === 'hourly' ? (
                 <HourlyLogs />
@@ -313,15 +314,19 @@ function App() {
                   categories={categories.filter(c => c !== 'ALL CATEGORY')}
                 />
               ) : activeMenu === 'dashboard' ? (
-                <div className="grid grid-cols-1 gap-10">
-                  {visibleCategories.map(cat => (
-                    <LineChartSection
-                      key={cat}
-                      data={filteredData.filter(d => d.category === cat)}
-                      title={`${cat} Trend Analysis`}
-                    />
-                  ))}
-                </div>
+                activeCategory === 'ALL CATEGORY' ? (
+                  <AllCategoryDashboardTable data={filteredData} />
+                ) : (
+                  <div className="grid grid-cols-1 gap-10">
+                    {visibleCategories.map(cat => (
+                      <LineChartSection
+                        key={cat}
+                        data={filteredData.filter(d => d.category === cat)}
+                        title={`${cat} Trend Analysis`}
+                      />
+                    ))}
+                  </div>
+                )
               ) : (
                 <div>
                   {visibleCategories.map(cat => (

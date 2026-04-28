@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getHourlySummary } from '../api';
+import { getHourlySummary, createHourlyLog } from '../api';
 import { TrendingUp, BarChart3 } from 'lucide-react';
 import HourlyTimeline from './HourlyTimeline';
 import HourlyLogModal from './HourlyLogModal';
@@ -37,6 +37,27 @@ const HourlySummary = ({ filterMode, filterValue, filterCell, activeCategory, ca
     setShowModal(true);
   };
 
+  const handleDirectSave = async (cellName, value) => {
+    if (filterMode !== 'day') {
+      return;
+    }
+    try {
+      await createHourlyLog({
+        category: 'COMPUTER STITCHING',
+        cell: cellName,
+        date: filterValue,
+        hour_range: 'DAILY_TOTAL',
+        output: parseInt(value) || 0,
+        b_grade: 0,
+        c_grade: 0,
+        note: ''
+      });
+      fetchData();
+    } catch (err) {
+      console.error(`Failed to save data for ${cellName}`, err);
+    }
+  };
+
   const fetchData = async () => {
     setLoading(true);
     try {
@@ -47,10 +68,10 @@ const HourlySummary = ({ filterMode, filterValue, filterCell, activeCategory, ca
       const res = await getHourlySummary(params);
       let summaryData = res.data;
 
-      const CELL_ORDER = ['Cell 3', 'Cell 4', 'Cell 5', 'Cell 9', 'Cell 10', 'Cell 11', 'Cell D6', 'Cell BZ'];
+      const CELL_ORDER = ['Cell 3', 'Cell 4', 'Cell 5', 'Cell 9', 'Cell 10', 'Cell 11', 'Cell D6', 'Cell BZ', 'ZHANHUI'];
       
       // For summary table, we use the union of all cells from all categories
-      const allDefaultCells = [...new Set(Object.values(CATEGORY_CELL_MAPPING).flat())];
+      const allDefaultCells = [...new Set(Object.values(CATEGORY_CELL_MAPPING).flat()), 'ZHANHUI'];
 
       if (filterCell === 'all') {
         const existingCells = summaryData.map(d => d.cell);
@@ -213,9 +234,27 @@ const HourlySummary = ({ filterMode, filterValue, filterCell, activeCategory, ca
                     </span>
                   </td>
                   <td className="py-4 px-4 sm:px-6 text-right">
-                    <span className={`text-xs sm:text-sm font-bold ${row['COMPUTER STITCHING'] > 0 ? 'text-text' : 'text-text-muted/30'}`}>
-                      {row['COMPUTER STITCHING'] ? row['COMPUTER STITCHING'].toLocaleString() : '0'}
-                    </span>
+                    {(row.cell === 'ZHANHUI' || row.cell === 'Cell D6') ? (
+                      filterMode === 'day' ? (
+                        <input 
+                          key={`direct-input-${row.cell}-${filterValue}-${row['COMPUTER STITCHING']}`}
+                          type="number"
+                          className={`w-16 sm:w-20 bg-surface border border-border/50 rounded px-2 py-1.5 text-right text-xs sm:text-sm font-bold focus:outline-none focus:ring-1 transition-all placeholder:font-normal placeholder:text-text-muted/30 ${row.cell === 'ZHANHUI' ? 'text-cyan-400 focus:border-cyan-400 focus:ring-cyan-400/50' : 'text-text focus:border-primary focus:ring-primary/50'}`}
+                          defaultValue={row['COMPUTER STITCHING'] || ''}
+                          placeholder="0"
+                          onBlur={(e) => handleDirectSave(row.cell, e.target.value)}
+                          onKeyDown={(e) => { if (e.key === 'Enter') e.target.blur(); }}
+                        />
+                      ) : (
+                        <span className={`text-xs sm:text-sm font-bold ${row['COMPUTER STITCHING'] > 0 ? (row.cell === 'ZHANHUI' ? 'text-cyan-400' : 'text-text') : 'text-text-muted/30'}`}>
+                          {row['COMPUTER STITCHING'] ? row['COMPUTER STITCHING'].toLocaleString() : '0'}
+                        </span>
+                      )
+                    ) : (
+                      <span className={`text-xs sm:text-sm font-bold ${row['COMPUTER STITCHING'] > 0 ? 'text-text' : 'text-text-muted/30'}`}>
+                        {row['COMPUTER STITCHING'] ? row['COMPUTER STITCHING'].toLocaleString() : '0'}
+                      </span>
+                    )}
                   </td>
                   <td className="py-4 px-4 sm:px-6 text-right">
                     <span className={`text-xs sm:text-sm font-bold ${row['SEWING'] > 0 ? 'text-text' : 'text-text-muted/30'}`}>

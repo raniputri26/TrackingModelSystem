@@ -211,6 +211,31 @@ const LineChartSection = ({ data, title }) => {
                 );
               })}
             </tbody>
+            {cellNames.length > 0 && chartDataDay.length > 0 && (
+              <tfoot className="border-t border-border">
+                <tr style={{ backgroundColor: 'var(--color-table-header)' }}>
+                  <td className="p-3 sm:p-4 font-bold text-[var(--color-table-header-text)] uppercase tracking-wider sticky left-0 z-10 border-r border-border" style={{ backgroundColor: 'var(--color-table-header)' }}>
+                    TOTAL
+                  </td>
+                  {chartDataDay.map(day => {
+                    const dayTotal = cellNames.reduce((sum, cell) => sum + (day[cell] || 0), 0);
+                    return (
+                      <td key={`total-${day.name}`} className="p-3 sm:p-4 font-bold text-primary text-center border-r border-border/30">
+                        {dayTotal > 0 ? dayTotal.toLocaleString() : '-'}
+                      </td>
+                    );
+                  })}
+                  <td className="p-3 sm:p-4 font-bold text-primary text-center sticky right-0 z-10 border-l border-border" style={{ backgroundColor: 'var(--color-table-header)' }}>
+                    {(() => {
+                      const grandTotal = chartDataDay.reduce((sum, day) => {
+                        return sum + cellNames.reduce((cellSum, cell) => cellSum + (day[cell] || 0), 0);
+                      }, 0);
+                      return grandTotal > 0 ? grandTotal.toLocaleString() : '-';
+                    })()}
+                  </td>
+                </tr>
+              </tfoot>
+            )}
           </table>
         </div>
       </div>
