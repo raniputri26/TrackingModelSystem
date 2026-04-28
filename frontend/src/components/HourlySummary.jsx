@@ -60,7 +60,8 @@ const HourlySummary = ({ filterMode, filterValue, filterCell, activeCategory, ca
               cell: cellName,
               total_all: 0,
               total_b_grade: 0,
-              total_c_grade: 0
+              total_c_grade: 0,
+              notes: ""
             });
           }
         });
@@ -71,7 +72,8 @@ const HourlySummary = ({ filterMode, filterValue, filterCell, activeCategory, ca
             cell: filterCell,
             total_all: 0,
             total_b_grade: 0,
-            total_c_grade: 0
+            total_c_grade: 0,
+            notes: ""
           });
         }
       }
@@ -173,13 +175,14 @@ const HourlySummary = ({ filterMode, filterValue, filterCell, activeCategory, ca
               <th className="py-4 px-4 sm:px-6 text-right text-[10px] sm:text-xs font-bold uppercase tracking-widest">Assembly</th>
               <th className="py-4 px-4 sm:px-6 text-right text-[10px] sm:text-xs font-bold uppercase tracking-widest border-l border-border/10">B Grade</th>
               <th className="py-4 px-4 sm:px-6 text-right text-[10px] sm:text-xs font-bold uppercase tracking-widest">C Grade</th>
+              <th className="py-4 px-4 sm:px-6 text-left text-[10px] sm:text-xs font-bold uppercase tracking-widest border-l border-border/50">Ket</th>
               <th className="py-4 px-4 sm:px-6 text-right text-[10px] sm:text-xs font-bold text-primary uppercase tracking-widest border-l border-border/50 sticky right-0 z-10 backdrop-blur-sm">Total Output</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border/50">
             {loading && data.length === 0 ? (
               <tr>
-                <td colSpan="8" className="text-center py-24">
+                <td colSpan="9" className="text-center py-24">
                   <div className="flex flex-col items-center gap-3">
                     <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary"></div>
                     <span className="text-sm text-text-muted font-medium">Calculating totals...</span>
@@ -188,7 +191,7 @@ const HourlySummary = ({ filterMode, filterValue, filterCell, activeCategory, ca
               </tr>
             ) : data.length === 0 ? (
               <tr>
-                <td colSpan="8" className="text-center py-24">
+                <td colSpan="9" className="text-center py-24">
                   <div className="flex flex-col items-center gap-2 opacity-40">
                     <TrendingUp size={48} className="text-text-muted mb-2" />
                     <p className="text-lg font-bold text-text-muted uppercase">No Data Found</p>
@@ -234,6 +237,11 @@ const HourlySummary = ({ filterMode, filterValue, filterCell, activeCategory, ca
                       {row['total_c_grade'] ? row['total_c_grade'].toLocaleString() : '0'}
                     </span>
                   </td>
+                  <td className="py-4 px-4 sm:px-6 text-left border-l border-border/50">
+                    <span className="text-xs text-text-muted max-w-[150px] block truncate" title={row['notes'] || '-'}>
+                      {row['notes'] || '-'}
+                    </span>
+                  </td>
                   <td className="py-4 px-4 sm:px-6 text-right border-l border-border/50 sticky right-0 z-10 bg-bg/95 backdrop-blur-sm">
                     <div className="flex flex-col items-end">
                       <span className="text-sm sm:text-base font-black text-primary-light">
@@ -267,6 +275,7 @@ const HourlySummary = ({ filterMode, filterValue, filterCell, activeCategory, ca
                 <td className="py-5 px-6 text-right text-sm text-red-500">
                   {data.reduce((acc, r) => acc + (r['total_c_grade'] || 0), 0).toLocaleString()}
                 </td>
+                <td className="py-5 px-6 border-l border-border/50"></td>
                 <td className="py-5 px-6 text-right text-lg text-primary border-l border-border/50">
                   {data.reduce((acc, r) => acc + (r['total_all'] || 0), 0).toLocaleString()}
                 </td>

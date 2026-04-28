@@ -172,7 +172,8 @@ def get_hourly_summary(date_filter: Optional[date] = None, month_filter: Optiona
         models.HourlyProduction.category,
         func.sum(models.HourlyProduction.output + models.HourlyProduction.b_grade + models.HourlyProduction.c_grade).label('total_output'),
         func.sum(models.HourlyProduction.b_grade).label('total_b_grade'),
-        func.sum(models.HourlyProduction.c_grade).label('total_c_grade')
+        func.sum(models.HourlyProduction.c_grade).label('total_c_grade'),
+        func.group_concat(models.HourlyProduction.note).label('notes')
     )
     
     if date_filter:
@@ -185,15 +186,26 @@ def get_hourly_summary(date_filter: Optional[date] = None, month_filter: Optiona
     
     # Pivot the data
     summary_map = {}
-    for cell, category, total, b_grade, c_grade in results:
+    for cell, category, total, b_grade, c_grade, notes in results:
         if cell not in summary_map:
-            summary_map[cell] = {"cell": cell, "total_all": 0, "total_b_grade": 0, "total_c_grade": 0}
+            summary_map[cell] = {"cell": cell, "total_all": 0, "total_b_grade": 0, "total_c_grade": 0, "notes_set": set()}
         summary_map[cell][category] = total
         summary_map[cell]["total_all"] += total
         summary_map[cell]["total_b_grade"] += (b_grade or 0)
         summary_map[cell]["total_c_grade"] += (c_grade or 0)
+        if notes:
+            for n in str(notes).split(','):
+                n_str = n.strip()
+                if n_str and n_str != 'None':
+                    summary_map[cell]["notes_set"].add(n_str)
         
-    return sorted(list(summary_map.values()), key=lambda x: x['cell'])
+    final_results = []
+    for val in summary_map.values():
+        val["notes"] = ", ".join(list(val["notes_set"]))
+        del val["notes_set"]
+        final_results.append(val)
+        
+    return sorted(final_results, key=lambda x: x['cell'])
 
 @app.get("/hourly-timeline")
 def get_hourly_timeline(category: Optional[str] = None, date_filter: Optional[date] = None, month_filter: Optional[str] = None, db: Session = Depends(database.get_db)):
