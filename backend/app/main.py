@@ -388,3 +388,29 @@ def get_visitors(
             } for log in logs[:10]
         ]
     }
+
+# --- MARKETING ENDPOINTS ---
+
+@app.post("/upload-marketing")
+async def upload_marketing_excel(file: UploadFile = File(...), sheet_name: str = "Summary", db: Session = Depends(database.get_db)):
+    if not file.filename.endswith(('.xlsx', '.xls', '.xlsm')):
+        raise HTTPException(status_code=400, detail="Format file tidak didukung.")
+    
+    temp_path = f"temp_mkt_{file.filename}"
+    with open(temp_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+    
+    try:
+        count = excel_processor.parse_marketing_excel(temp_path, db, sheet_name=sheet_name)
+        return {"message": "Success", "records_processed": count}
+    except Exception as e:
+        import traceback
+        print(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
+
+@app.get("/marketing-data")
+def get_marketing_data(db: Session = Depends(database.get_db)):
+    return db.query(models.MarketingData).order_by(models.MarketingData.date.asc()).all()

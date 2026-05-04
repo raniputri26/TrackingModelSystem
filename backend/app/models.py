@@ -47,3 +47,18 @@ class VisitorLog(Base):
     browser = Column(String(50))
     os = Column(String(50))
     visited_at = Column(DateTime, default=datetime.utcnow, index=True)
+
+class MarketingData(Base):
+    __tablename__ = "marketing_data"
+
+    id = Column(Integer, primary_key=True, index=True)
+    date = Column(Date, index=True, unique=True)
+    month_name = Column(String(20)) # e.g. "March"
+    pd_hrs = Column(Float)
+    target = Column(Integer)
+    act_output = Column(Integer)
+    total_cell = Column(Integer)
+    gap = Column(Integer)
+    act_vs_target = Column(Float) # Percentage
+    remarks = Column(String(500))
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

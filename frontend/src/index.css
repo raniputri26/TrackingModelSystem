@@ -234,3 +234,8 @@ html.light, .light, [data-theme='light'] {
 .animate-fade-in {
   animation: fadeIn 0.4s ease-out forwards;
 }
+
+/* Date input color scheme for light/dark mode */
+.light input[type="date"] {
+  color-scheme: light !important;
+}

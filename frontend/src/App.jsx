@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { Menu } from 'lucide-react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { Menu, BarChart3 } from 'lucide-react';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import DashboardGrid from './components/DashboardGrid';
@@ -10,6 +10,7 @@ import HourlyLogs from './components/HourlyLogs';
 import HourlyDashboardChart from './components/HourlyDashboardChart';
 import HourlySummary from './components/HourlySummary';
 import VisitorAnalytics from './components/VisitorAnalytics';
+import MarketingDashboardTable from './components/MarketingDashboardTable';
 import { getCategories, getProductionData, getHourlyDates, getHourlyLogs, trackVisit } from './api';
 
 function App() {
@@ -21,9 +22,13 @@ function App() {
   const [hourlyDashboardData, setHourlyDashboardData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isUploadOpen, setIsUploadOpen] = useState(false);
-  const [filterMode, setFilterMode] = useState('month'); // all, day, week, month
+  const [filterMode, setFilterMode] = useState('month'); // all, day, week, month, range
   const [filterValue, setFilterValue] = useState('');
+  const [filterRangeStart, setFilterRangeStart] = useState('');
+  const [filterRangeEnd, setFilterRangeEnd] = useState('');
   const [filterCell, setFilterCell] = useState('all');
+  const [dashboardType, setDashboardType] = useState('produksi'); // produksi, marketing
+  const [marketingData, setMarketingData] = useState([]);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark');
 
@@ -98,6 +103,16 @@ function App() {
     }
   };
 
+  const fetchMarketingData = async () => {
+    try {
+      const { getMarketingData } = await import('./api');
+      const res = await getMarketingData();
+      setMarketingData(res.data);
+    } catch (err) {
+      console.error("Failed to fetch marketing data", err);
+    }
+  };
+
   const fetchHourlyDashboardData = async () => {
     try {
       const params = {};
@@ -118,6 +133,7 @@ function App() {
       await fetchCategories();
       await fetchData();
       await fetchHourlyDates();
+      if (dashboardType === 'marketing') await fetchMarketingData();
       if (activeMenu === 'dashboard') await fetchHourlyDashboardData();
     };
     init();
@@ -125,6 +141,7 @@ function App() {
     // Auto-polling for dashboard data
     const interval = setInterval(() => {
       fetchData(true);
+      if (dashboardType === 'marketing') fetchMarketingData();
     }, 15000); // 15 seconds
 
     return () => clearInterval(interval);
@@ -134,8 +151,9 @@ function App() {
   useEffect(() => {
     if (activeMenu === 'dashboard') {
       fetchHourlyDashboardData();
+      if (dashboardType === 'marketing') fetchMarketingData();
     }
-  }, [activeMenu, filterMode, filterValue]);
+  }, [activeMenu, filterMode, filterValue, dashboardType]);
 
   // Get unique dates based on active menu (Production vs Hourly/Visitor)
   const availableDates = useMemo(() => {
@@ -164,9 +182,15 @@ function App() {
     });
   }, [data, activeCategory]);
 
+  // Track previous filterMode to detect actual mode changes
+  const prevFilterModeRef = useRef(filterMode);
+
   // Auto-select latest filter value when mode changes
   useEffect(() => {
     if (!availableDates.length) return;
+
+    const modeJustChanged = prevFilterModeRef.current !== filterMode;
+    prevFilterModeRef.current = filterMode;
 
     if (filterMode === 'day') {
       setFilterValue(availableDates[availableDates.length - 1]); // latest date
@@ -178,6 +202,13 @@ function App() {
     } else if (filterMode === 'month') {
       const d = new Date(availableDates[availableDates.length - 1]);
       setFilterValue(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
+    } else if (filterMode === 'range') {
+      // Only set defaults when user first switches to range mode
+      if (modeJustChanged) {
+        setFilterRangeStart(availableDates[0]);
+        setFilterRangeEnd(availableDates[availableDates.length - 1]);
+        setFilterValue('');
+      }
     } else {
       setFilterValue('');
     }
@@ -190,7 +221,9 @@ function App() {
     let result = data;
 
     // Apply date filter
-    if (filterMode !== 'all' && filterValue) {
+    if (filterMode === 'range' && filterRangeStart && filterRangeEnd) {
+      result = result.filter(d => d.date >= filterRangeStart && d.date <= filterRangeEnd);
+    } else if (filterMode !== 'all' && filterValue) {
       result = result.filter(d => {
         const date = new Date(d.date);
         if (filterMode === 'day') return d.date === filterValue;
@@ -212,7 +245,7 @@ function App() {
     }
 
     return result;
-  }, [data, filterMode, filterValue, filterCell]);
+  }, [data, filterMode, filterValue, filterRangeStart, filterRangeEnd, filterCell]);
 
   // Show all categories if "ALL CATEGORY" is selected, otherwise show only the selected one
   const visibleCategories = activeCategory === 'ALL CATEGORY'
@@ -270,7 +303,7 @@ function App() {
                     activeMenu === 'hourly_summary' ? 'Live Aggregated Output Monitoring' :
                       'Production Monitoring'
               }
-              onUploadClick={() => setIsUploadOpen(true)}
+               onUploadClick={() => setIsUploadOpen(true)}
               categories={categories}
               activeCategory={activeCategory}
               onSelectCategory={setActiveCategory}
@@ -279,10 +312,17 @@ function App() {
               filterValue={filterValue}
               onFilterValueChange={setFilterValue}
               availableDates={availableDates}
+              filterRangeStart={filterRangeStart}
+              filterRangeEnd={filterRangeEnd}
+              onFilterRangeStartChange={setFilterRangeStart}
+              onFilterRangeEndChange={setFilterRangeEnd}
               filterCell={filterCell}
               onFilterCellChange={setFilterCell}
               availableCells={availableCells}
-              hideTabs={activeMenu === 'visitors'}
+              dashboardType={dashboardType}
+              onDashboardTypeChange={setDashboardType}
+              activeMenu={activeMenu}
+              hideTabs={activeMenu === 'visitors' || (activeMenu === 'dashboard' && dashboardType === 'marketing')}
               hideSearch={activeMenu === 'visitors'}
               hideActionButtons={activeMenu === 'visitors'}
               theme={theme}
@@ -291,7 +331,7 @@ function App() {
           )}
         </div>
 
-        <div className="flex-1 overflow-y-auto px-8 pb-8 pt-4">
+        <div className="flex-1 overflow-y-auto px-8 pb-4 pt-4">
           {loading ? (
             <div className="flex items-center justify-center h-64">
               <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-primary"></div>
@@ -314,18 +354,22 @@ function App() {
                   categories={categories.filter(c => c !== 'ALL CATEGORY')}
                 />
               ) : activeMenu === 'dashboard' ? (
-                activeCategory === 'ALL CATEGORY' ? (
-                  <AllCategoryDashboardTable data={filteredData} />
+                dashboardType === 'produksi' ? (
+                  activeCategory === 'ALL CATEGORY' ? (
+                    <AllCategoryDashboardTable data={filteredData} />
+                  ) : (
+                    <div className="grid grid-cols-1 gap-10">
+                      {visibleCategories.map(cat => (
+                        <LineChartSection
+                          key={cat}
+                          data={filteredData.filter(d => d.category === cat)}
+                          title={`${cat} Trend Analysis`}
+                        />
+                      ))}
+                    </div>
+                  )
                 ) : (
-                  <div className="grid grid-cols-1 gap-10">
-                    {visibleCategories.map(cat => (
-                      <LineChartSection
-                        key={cat}
-                        data={filteredData.filter(d => d.category === cat)}
-                        title={`${cat} Trend Analysis`}
-                      />
-                    ))}
-                  </div>
+                  <MarketingDashboardTable data={marketingData} />
                 )
               ) : (
                 <div>
@@ -345,10 +389,12 @@ function App() {
 
       {isUploadOpen && (
         <UploadModal
+          initialType={dashboardType === 'marketing' ? 'marketing' : 'production'}
           onClose={() => setIsUploadOpen(false)}
           onSuccess={() => {
             fetchCategories();
             fetchData();
+            if (dashboardType === 'marketing') fetchMarketingData();
             setIsUploadOpen(false);
           }}
         />

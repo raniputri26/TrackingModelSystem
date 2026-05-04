@@ -1,14 +1,21 @@
 import React, { useMemo } from 'react';
-import { Upload, Bell, Search, ChevronDown, Sun, Moon } from 'lucide-react';
+import { Upload, Bell, Search, ChevronDown, Calendar, Sun, Moon } from 'lucide-react';
 
 const Header = ({ 
   title, subtitle, onUploadClick, 
   categories, activeCategory, onSelectCategory, 
   filterMode, onFilterModeChange, filterValue, onFilterValueChange,
   availableDates,
+  filterRangeStart,
+  filterRangeEnd,
+  onFilterRangeStartChange,
+  onFilterRangeEndChange,
   filterCell,
   onFilterCellChange,
   availableCells,
+  dashboardType,
+  onDashboardTypeChange,
+  activeMenu,
   hideTabs,
   hideSearch,
   hideActionButtons,
@@ -91,6 +98,7 @@ const Header = ({
                 <option value="day">Day</option>
                 <option value="week">Week</option>
                 <option value="month">Month</option>
+                <option value="range">Range</option>
               </select>
               <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
             </div>
@@ -108,6 +116,31 @@ const Header = ({
                   {filterMode === 'month' && monthOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
                 </select>
                 <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
+              </div>
+            )}
+
+            {/* Date Range Picker */}
+            {filterMode === 'range' && (
+              <div className="flex items-center gap-1.5 sm:gap-2 animate-fade-in">
+                <div className="relative flex-1 sm:flex-none min-w-[120px]">
+                  <Calendar size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
+                  <input
+                    type="date"
+                    value={filterRangeStart}
+                    onChange={(e) => onFilterRangeStartChange(e.target.value)}
+                    className="w-full glass-card pl-7 pr-2 py-1.5 text-[10px] sm:text-sm cursor-pointer bg-surface-alt border border-border rounded-xl outline-none focus:border-primary transition-colors text-text [color-scheme:dark]"
+                  />
+                </div>
+                <span className="text-text-muted text-[10px] sm:text-xs font-semibold">to</span>
+                <div className="relative flex-1 sm:flex-none min-w-[120px]">
+                  <Calendar size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
+                  <input
+                    type="date"
+                    value={filterRangeEnd}
+                    onChange={(e) => onFilterRangeEndChange(e.target.value)}
+                    className="w-full glass-card pl-7 pr-2 py-1.5 text-[10px] sm:text-sm cursor-pointer bg-surface-alt border border-border rounded-xl outline-none focus:border-primary transition-colors text-text [color-scheme:dark]"
+                  />
+                </div>
               </div>
             )}
 
@@ -154,6 +187,41 @@ const Header = ({
           </div>
         </div>
       </div>
+
+      {/* Dashboard Type Selection (Produksi / Marketing) */}
+      {activeMenu === 'dashboard' && (
+        <div className="flex items-center gap-6 border-b border-border/20 mb-2 px-1">
+          <button
+            onClick={() => onDashboardTypeChange('produksi')}
+            className={`group relative pb-3 text-xs sm:text-sm font-bold tracking-wider transition-all ${
+              dashboardType === 'produksi' ? 'text-primary' : 'text-text-muted hover:text-text'
+            }`}
+          >
+            <div className="flex items-center gap-1.5">
+              <span>PRODUKSI</span>
+              <ChevronDown size={14} className={`transition-transform duration-300 ${dashboardType === 'produksi' ? 'rotate-180' : ''}`} />
+            </div>
+            {dashboardType === 'produksi' && (
+              <div className="absolute bottom-0 left-0 w-full h-0.5 bg-primary shadow-[0_0_8px_rgba(6,182,212,0.5)] rounded-full animate-in fade-in slide-in-from-bottom-1" />
+            )}
+          </button>
+
+          <button
+            onClick={() => onDashboardTypeChange('marketing')}
+            className={`group relative pb-3 text-xs sm:text-sm font-bold tracking-wider transition-all ${
+              dashboardType === 'marketing' ? 'text-primary' : 'text-text-muted hover:text-text'
+            }`}
+          >
+            <div className="flex items-center gap-1.5">
+              <span>MARKETING</span>
+              <ChevronDown size={14} className={`transition-transform duration-300 ${dashboardType === 'marketing' ? 'rotate-180' : ''}`} />
+            </div>
+            {dashboardType === 'marketing' && (
+              <div className="absolute bottom-0 left-0 w-full h-0.5 bg-primary shadow-[0_0_8px_rgba(6,182,212,0.5)] rounded-full animate-in fade-in slide-in-from-bottom-1" />
+            )}
+          </button>
+        </div>
+      )}
 
       {/* Category Tabs */}
       {!hideTabs && categories && categories.length > 0 && (

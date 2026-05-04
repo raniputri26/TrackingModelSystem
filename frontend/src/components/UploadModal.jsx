@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { X, FileUp, CheckCircle, AlertCircle, Loader2, List } from 'lucide-react';
-import { uploadExcel, listSheets } from '../api';
+import { uploadExcel, listSheets, uploadMarketingExcel } from '../api';
 
-const UploadModal = ({ onClose, onSuccess }) => {
+const UploadModal = ({ onClose, onSuccess, initialType = 'production' }) => {
   const [file, setFile] = useState(null);
   const [sheets, setSheets] = useState([]);
   const [selectedSheet, setSelectedSheet] = useState('Summary');
+  const [uploadType, setUploadType] = useState(initialType); // production, marketing
   const [status, setStatus] = useState('idle'); // idle, loading_sheets, uploading, success, error
   const [message, setMessage] = useState('');
 
@@ -35,7 +36,12 @@ const UploadModal = ({ onClose, onSuccess }) => {
     
     setStatus('uploading');
     try {
-      const res = await uploadExcel(file, selectedSheet);
+      let res;
+      if (uploadType === 'marketing') {
+        res = await uploadMarketingExcel(file, selectedSheet);
+      } else {
+        res = await uploadExcel(file, selectedSheet);
+      }
       setStatus('success');
       setMessage(`Successfully processed ${res.data.records_processed} records.`);
       setTimeout(() => {
@@ -53,11 +59,28 @@ const UploadModal = ({ onClose, onSuccess }) => {
         <div className="p-6 border-b border-border flex justify-between items-center bg-surface-alt/50">
           <div>
             <h3 className="text-xl font-bold">Import Data</h3>
-            <p className="text-xs text-text-muted">Select file and target sheet</p>
+            <p className="text-xs text-text-muted">Select upload type and source file</p>
           </div>
           <button onClick={onClose} className="text-text-muted hover:text-white transition-colors">
             <X size={20} />
           </button>
+        </div>
+
+        <div className="px-8 pt-6">
+          <div className="flex p-1 bg-surface-alt rounded-xl border border-border">
+            <button
+              onClick={() => setUploadType('production')}
+              className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${uploadType === 'production' ? 'bg-primary text-bg shadow-sm' : 'text-text-muted hover:text-text'}`}
+            >
+              PRODUCTION
+            </button>
+            <button
+              onClick={() => setUploadType('marketing')}
+              className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${uploadType === 'marketing' ? 'bg-primary text-bg shadow-sm' : 'text-text-muted hover:text-text'}`}
+            >
+              MARKETING
+            </button>
+          </div>
         </div>
 
         <div className="p-8">

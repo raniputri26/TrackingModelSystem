@@ -381,3 +381,131 @@ def parse_tracking_excel(file_path: str, db: Session, sheet_name: str = "Summary
         f.write("\n".join(log))
 
     return records_added
+
+
+def parse_marketing_excel(file_path: str, db: Session, sheet_name: str = "Summary"):
+    """Parse marketing specific Excel format."""
+    import re
+    wb = openpyxl.load_workbook(file_path, data_only=True)
+    if sheet_name not in wb.sheetnames:
+        wb.close()
+        raise ValueError(f"Sheet '{sheet_name}' not found.")
+    
+    sheet = wb[sheet_name]
+    
+    # Try to detect year from I2 or similar
+    detected_year = datetime.now().year
+    try:
+        title_info = ""
+        # Check a few potential cells for the date string like "Tuesday, April 28, 2026"
+        for cell_ref in ['I2', 'H2', 'G2', 'J2', 'A2']:
+            val = sheet[cell_ref].value
+            if val:
+                title_info = str(val)
+                break
+        
+        year_match = re.search(r'20\d{2}', title_info)
+        if year_match:
+            detected_year = int(year_match.group(0))
+    except:
+        pass
+
+    records_added = 0
+    current_month_name = ""
+    
+    # Data starts from row 5 based on the screenshot
+    # We scan to find the header first to be sure
+    start_row = 5
+    for r in range(1, 10):
+        if str(sheet.cell(row=r, column=2).value).strip().lower() == 'date':
+            start_row = r + 1
+            break
+
+    for row_idx in range(start_row, sheet.max_row + 1):
+        # Column A: Month
+        month_val = sheet.cell(row=row_idx, column=1).value
+        if month_val:
+            current_month_name = str(month_val).strip()
+            
+        # Column B: Date
+        date_val = sheet.cell(row=row_idx, column=2).value
+        
+        if date_val is None:
+            continue
+        
+        date_str = str(date_val).lower()
+        if "total" in date_str or "grand" in date_str or not date_str.strip():
+            continue
+            
+        # Try to construct the date
+        actual_date = None
+        try:
+            if isinstance(date_val, (int, float)):
+                day = int(date_val)
+                month_map = {
+                    'january': 1, 'february': 2, 'march': 3, 'april': 4, 'may': 5, 'june': 6,
+                    'july': 7, 'august': 8, 'september': 9, 'october': 10, 'november': 11, 'december': 12
+                }
+                month_num = month_map.get(current_month_name.lower(), 1)
+                actual_date = date(detected_year, month_num, day)
+            elif isinstance(date_val, (datetime, date)):
+                actual_date = date_val.date() if hasattr(date_val, 'date') else date_val
+            else:
+                # Try parsing string
+                try:
+                    actual_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+                except:
+                    continue
+        except:
+            continue
+
+        if not actual_date:
+            continue
+
+        # Extract values
+        pd_hrs = sheet.cell(row=row_idx, column=3).value
+        target = sheet.cell(row=row_idx, column=4).value
+        act_output = sheet.cell(row=row_idx, column=5).value
+        total_cell = sheet.cell(row=row_idx, column=6).value
+        gap = sheet.cell(row=row_idx, column=7).value
+        act_vs_target = sheet.cell(row=row_idx, column=8).value
+        remarks = sheet.cell(row=row_idx, column=9).value
+
+        def safe_float(v):
+            if v is None or str(v).strip() in ('', '-', '#DIV/0!'): return 0.0
+            try: return float(v)
+            except: return 0.0
+            
+        def safe_int(v):
+            if v is None or str(v).strip() in ('', '-', '#DIV/0!'): return 0
+            try: return int(float(v))
+            except: return 0
+
+        existing = db.query(models.MarketingData).filter(models.MarketingData.date == actual_date).first()
+        
+        if existing:
+            existing.month_name = current_month_name
+            existing.pd_hrs = safe_float(pd_hrs)
+            existing.target = safe_int(target)
+            existing.act_output = safe_int(act_output)
+            existing.total_cell = safe_int(total_cell)
+            existing.gap = safe_int(gap)
+            existing.act_vs_target = safe_float(act_vs_target)
+            existing.remarks = str(remarks) if remarks else ""
+        else:
+            db.add(models.MarketingData(
+                date=actual_date,
+                month_name=current_month_name,
+                pd_hrs=safe_float(pd_hrs),
+                target=safe_int(target),
+                act_output=safe_int(act_output),
+                total_cell=safe_int(total_cell),
+                gap=safe_int(gap),
+                act_vs_target=safe_float(act_vs_target),
+                remarks=str(remarks) if remarks else ""
+            ))
+        records_added += 1
+    
+    db.commit()
+    wb.close()
+    return records_added

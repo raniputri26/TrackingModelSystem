@@ -66,4 +66,17 @@ export const getVisitorStats = (params) => {
   return api.get('/visitors', { params });
 };
 
+// --- Marketing API ---
+export const uploadMarketingExcel = (file, sheetName = "Summary") => {
+  const formData = new FormData();
+  formData.append('file', file);
+  return api.post(`/upload-marketing?sheet_name=${encodeURIComponent(sheetName)}`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+};
+
+export const getMarketingData = () => {
+  return api.get('/marketing-data');
+};
+
 export default api;
