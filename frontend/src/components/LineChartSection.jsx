@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine, LabelList } from 'recharts';
 
-const LineChartSection = ({ data, title }) => {
+const LineChartSection = ({ data, title, debugInfo }) => {
   // Transform data for Output/Day
   const chartDataDay = useMemo(() => {
     const dates = [...new Set(data.map(item => item.date))].sort();
@@ -45,7 +45,8 @@ const LineChartSection = ({ data, title }) => {
       <div className="glass-card p-6">
         <h3 className="text-lg font-bold mb-6 text-white">{title}</h3>
         <div className="h-[300px] flex items-center justify-center text-text-muted">
-          No trend data to display.
+          No trend data to display. <br/> 
+          Debug: mode={debugInfo?.filterMode}, val={debugInfo?.filterValue}, cell={debugInfo?.filterCell}, total={debugInfo?.totalData}, filtered={debugInfo?.filteredDataLen}
         </div>
       </div>
     );

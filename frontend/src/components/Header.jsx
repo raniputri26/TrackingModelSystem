@@ -45,7 +45,7 @@ const Header = ({
     const months = {};
     availableDates.forEach(dateStr => {
       const d = new Date(dateStr);
-      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      const key = dateStr.substring(0, 7); // Extracts "YYYY-MM" safely
       if (!months[key]) {
         months[key] = { label: d.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }), value: key };
       }

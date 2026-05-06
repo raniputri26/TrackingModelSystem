@@ -203,8 +203,8 @@ function App() {
         const weekNum = Math.ceil(((d - jan1) / 86400000 + jan1.getDay() + 1) / 7);
         setFilterValue(`${d.getFullYear()}-W${weekNum}`);
       } else if (filterMode === 'month') {
-        const d = new Date(availableDates[availableDates.length - 1]);
-        setFilterValue(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
+        const latest = availableDates[availableDates.length - 1];
+        if (latest) setFilterValue(latest.substring(0, 7));
       } else if (filterMode === 'range') {
         setFilterRangeStart(availableDates[0]);
         setFilterRangeEnd(availableDates[availableDates.length - 1]);
@@ -234,7 +234,7 @@ function App() {
           return `${date.getFullYear()}-W${weekNum}` === filterValue;
         }
         if (filterMode === 'month') {
-          return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}` === filterValue;
+          return d.date.startsWith(filterValue);
         }
         return true;
       });
@@ -365,6 +365,7 @@ function App() {
                           key={cat}
                           data={filteredData.filter(d => d.category === cat)}
                           title={`${cat} Trend Analysis`}
+                          debugInfo={{ filterMode, filterValue, filterCell, totalData: data.length, filteredDataLen: filteredData.length }}
                         />
                       ))}
                     </div>
