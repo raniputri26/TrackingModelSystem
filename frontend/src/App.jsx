@@ -192,25 +192,26 @@ function App() {
     const modeJustChanged = prevFilterModeRef.current !== filterMode;
     prevFilterModeRef.current = filterMode;
 
-    if (filterMode === 'day') {
-      setFilterValue(availableDates[availableDates.length - 1]); // latest date
-    } else if (filterMode === 'week') {
-      const d = new Date(availableDates[availableDates.length - 1]);
-      const jan1 = new Date(d.getFullYear(), 0, 1);
-      const weekNum = Math.ceil(((d - jan1) / 86400000 + jan1.getDay() + 1) / 7);
-      setFilterValue(`${d.getFullYear()}-W${weekNum}`);
-    } else if (filterMode === 'month') {
-      const d = new Date(availableDates[availableDates.length - 1]);
-      setFilterValue(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
-    } else if (filterMode === 'range') {
-      // Only set defaults when user first switches to range mode
-      if (modeJustChanged) {
+    // Only set default values if mode just changed or value is empty
+    // This prevents polling from resetting manual user selection
+    if (modeJustChanged || !filterValue) {
+      if (filterMode === 'day') {
+        setFilterValue(availableDates[availableDates.length - 1]); // latest date
+      } else if (filterMode === 'week') {
+        const d = new Date(availableDates[availableDates.length - 1]);
+        const jan1 = new Date(d.getFullYear(), 0, 1);
+        const weekNum = Math.ceil(((d - jan1) / 86400000 + jan1.getDay() + 1) / 7);
+        setFilterValue(`${d.getFullYear()}-W${weekNum}`);
+      } else if (filterMode === 'month') {
+        const d = new Date(availableDates[availableDates.length - 1]);
+        setFilterValue(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
+      } else if (filterMode === 'range') {
         setFilterRangeStart(availableDates[0]);
         setFilterRangeEnd(availableDates[availableDates.length - 1]);
         setFilterValue('');
+      } else {
+        setFilterValue('');
       }
-    } else {
-      setFilterValue('');
     }
   }, [filterMode, availableDates]);
 
