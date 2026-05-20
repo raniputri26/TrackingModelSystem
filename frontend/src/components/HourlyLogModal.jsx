@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { X, Save, Clock } from 'lucide-react';
 import { createHourlyLog, updateHourlyLog, getCategories } from '../api';
 
@@ -11,7 +11,7 @@ const HOUR_RANGES = [
 
 const CELL_OPTIONS = [
   'Cell 3', 'Cell 4', 'Cell 5', 'Cell 9', 'Cell 10', 
-  'Cell 11', 'Cell D6', 'Cell BZ',
+  'Cell 11', 'Cell D3', 'Cell D5', 'Cell D6', 'Cell D7', 'Cell BZ',
 ];
 
 const CATEGORY_ORDER = [
@@ -29,10 +29,25 @@ const HourlyLogModal = ({ onClose, onSuccess, editData }) => {
     date: editData?.date || new Date().toISOString().split('T')[0],
     hour_range: editData?.hour_range || HOUR_RANGES[0],
     output: editData?.output || 0,
+    input_qty: editData?.input_qty || 0,
     b_grade: editData?.b_grade || 0,
     c_grade: editData?.c_grade || 0,
     note: editData?.note || '',
   });
+
+  const outputRef = useRef(null);
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    // Auto-focus the requested field on mount
+    setTimeout(() => {
+      if (editData?._focusField === 'input' && inputRef.current) {
+        inputRef.current.focus();
+      } else if (outputRef.current) {
+        outputRef.current.focus();
+      }
+    }, 100);
+  }, [editData]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
@@ -57,6 +72,7 @@ const HourlyLogModal = ({ onClose, onSuccess, editData }) => {
       const payload = {
         ...form,
         output: parseInt(form.output) || 0,
+        input_qty: parseInt(form.input_qty) || 0,
         b_grade: parseInt(form.b_grade) || 0,
         c_grade: parseInt(form.c_grade) || 0,
         note: form.note || null
@@ -134,16 +150,29 @@ const HourlyLogModal = ({ onClose, onSuccess, editData }) => {
             </div>
           </div>
 
-          {/* Output, B Grade, C Grade Row */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {/* Output, Input, B Grade, C Grade Row */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <div>
               <label className="block text-xs font-bold text-text-muted uppercase tracking-wider mb-2">Output</label>
               <input
+                ref={outputRef}
                 type="number"
                 min="0"
                 value={form.output}
                 onChange={e => handleChange('output', e.target.value)}
                 className={inputClass}
+                placeholder="0"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-primary uppercase tracking-wider mb-2">Input</label>
+              <input
+                ref={inputRef}
+                type="number"
+                min="0"
+                value={form.input_qty}
+                onChange={e => handleChange('input_qty', e.target.value)}
+                className={`${inputClass} border-primary/30 focus:border-primary`}
                 placeholder="0"
               />
             </div>

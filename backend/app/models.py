@@ -30,6 +30,7 @@ class HourlyProduction(Base):
     date = Column(Date, index=True)
     hour_range = Column(String(50)) # e.g. "07:00 - 08:00"
     output = Column(Integer, default=0)
+    input_qty = Column(Integer, default=0)
     b_grade = Column(Integer, default=0)
     c_grade = Column(Integer, default=0)
     note = Column(String(500), nullable=True)

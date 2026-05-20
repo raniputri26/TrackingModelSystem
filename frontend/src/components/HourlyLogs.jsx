@@ -25,7 +25,7 @@ const HOUR_ORDER = [
   '18:30 - 19:30', '19:30 - 20:30', '20:30 - 21:30',
 ];
 
-const CELL_ORDER = ['Cell 3', 'Cell 4', 'Cell 5', 'Cell 9', 'Cell 10', 'Cell 11', 'Cell D6', 'Cell BZ'];
+const CELL_ORDER = ['Cell 3', 'Cell 4', 'Cell 5', 'Cell 9', 'Cell 10', 'Cell 11', 'Cell D3', 'Cell D5', 'Cell D6', 'Cell D7', 'Cell BZ'];
 
 const cellSortKey = (name) => {
   const idx = CELL_ORDER.indexOf(name);
@@ -544,6 +544,7 @@ const HourlyLogs = () => {
                               </div>
                             </th>
                             <th className="text-right py-3 px-4 text-[var(--color-table-header-text)] font-bold text-[11px] uppercase tracking-wider">Output</th>
+                            <th className="text-right py-3 px-4 text-[var(--color-table-header-text)] font-bold text-[11px] uppercase tracking-wider text-primary">Input</th>
                             <th className="text-right py-3 px-4 text-[var(--color-table-header-text)] font-bold text-[11px] uppercase tracking-wider">B Grade</th>
                             <th className="text-right py-3 px-4 text-[var(--color-table-header-text)] font-bold text-[11px] uppercase tracking-wider">C Grade</th>
                             <th className="text-right py-3 px-4 text-[var(--color-table-header-text)] font-bold text-[11px] uppercase tracking-wider">Output / Target</th>
@@ -577,6 +578,7 @@ const HourlyLogs = () => {
                                     </span>
                                   </td>
                                   <td className="py-2.5 px-4 text-right text-[13px] font-bold text-text">{log.output.toLocaleString()}</td>
+                                  <td className="py-2.5 px-4 text-right text-[13px] font-bold text-primary">{log.input_qty ? log.input_qty.toLocaleString() : '0'}</td>
                                   <td className="py-2.5 px-4 text-right text-[13px]">
                                     <span className={`font-bold ${log.b_grade > 0 ? 'text-amber-400' : 'text-text-muted/40'}`}>
                                       {log.b_grade}

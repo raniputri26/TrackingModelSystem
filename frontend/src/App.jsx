@@ -44,6 +44,19 @@ function App() {
     localStorage.setItem('theme', theme);
   }, [theme]);
 
+  // Track hidden cells and persist to localStorage
+  const [hiddenCells, setHiddenCells] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('hiddenCells') || '[]');
+    } catch (e) {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    localStorage.setItem('hiddenCells', JSON.stringify(hiddenCells));
+  }, [hiddenCells]);
+
   const toggleTheme = () => {
     setTheme(prev => prev === 'dark' ? 'light' : 'dark');
   };
@@ -168,7 +181,7 @@ function App() {
     if (!data.length) return [];
     const categoryData = data.filter(d => d.category === activeCategory);
     const unique = [...new Set(categoryData.map(d => d.cell))];
-    const CELL_ORDER = ['Cell 3', 'Cell 4', 'Cell 5', 'Cell 9', 'Cell 10', 'Cell 11', 'Cell D6', 'Cell BZ'];
+    const CELL_ORDER = ['Cell 3', 'Cell 4', 'Cell 5', 'Cell 9', 'Cell 10', 'Cell 11', 'Cell D3', 'Cell D5', 'Cell D6', 'Cell D7', 'Cell BZ'];
     return unique.sort((a, b) => {
       const idxA = CELL_ORDER.indexOf(a);
       const idxB = CELL_ORDER.indexOf(b);
@@ -353,6 +366,8 @@ function App() {
                   filterCell={filterCell}
                   activeCategory={activeCategory}
                   categories={categories.filter(c => c !== 'ALL CATEGORY')}
+                  hiddenCells={hiddenCells}
+                  setHiddenCells={setHiddenCells}
                 />
               ) : activeMenu === 'dashboard' ? (
                 dashboardType === 'produksi' ? (

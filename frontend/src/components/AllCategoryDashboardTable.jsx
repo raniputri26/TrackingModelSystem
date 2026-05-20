@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
-import { BarChart3, TrendingUp } from 'lucide-react';
+import { BarChart3, TrendingUp, Activity } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 const CATEGORY_KEYS = [
   'CUTTING + PREPARATION',
@@ -7,6 +8,21 @@ const CATEGORY_KEYS = [
   'SEWING',
   'ASSEMBLY'
 ];
+
+const CATEGORY_COLORS = {
+  'CUTTING + PREPARATION': '#06b6d4',
+  'COMPUTER STITCHING': '#a855f7',
+  'SEWING': '#f59e0b',
+  'ASSEMBLY': '#84cc16',
+  'TOTAL': '#ef4444'
+};
+
+const CATEGORY_SHORT = {
+  'CUTTING + PREPARATION': 'Cutting + Prep',
+  'COMPUTER STITCHING': 'Comp Stitching',
+  'SEWING': 'Sewing',
+  'ASSEMBLY': 'Assembly'
+};
 
 const AllCategoryDashboardTable = ({ data }) => {
   const tableData = useMemo(() => {
@@ -34,7 +50,7 @@ const AllCategoryDashboardTable = ({ data }) => {
     const result = Object.values(cellMap);
 
     // Sort cells naturally
-    const CELL_ORDER = ['Cell 3', 'Cell 4', 'Cell 5', 'Cell 9', 'Cell 10', 'Cell 11', 'Cell D6', 'Cell BZ'];
+    const CELL_ORDER = ['Cell 3', 'Cell 4', 'Cell 5', 'Cell 9', 'Cell 10', 'Cell 11', 'Cell D3', 'Cell D5', 'Cell D6', 'Cell D7', 'Cell BZ'];
     result.sort((a, b) => {
       const idxA = CELL_ORDER.indexOf(a.cell);
       const idxB = CELL_ORDER.indexOf(b.cell);
@@ -48,6 +64,22 @@ const AllCategoryDashboardTable = ({ data }) => {
     });
 
     return result;
+  }, [data]);
+
+  // Build daily trend data: total output per day across all cells, grouped by category
+  const dailyTrendData = useMemo(() => {
+    const dateMap = {};
+    data.forEach(item => {
+      if (!CATEGORY_KEYS.includes(item.category)) return;
+      const date = item.date;
+      if (!dateMap[date]) {
+        dateMap[date] = { date, 'CUTTING + PREPARATION': 0, 'COMPUTER STITCHING': 0, 'SEWING': 0, 'ASSEMBLY': 0, TOTAL: 0 };
+      }
+      const val = Math.round(item.output_day || 0);
+      dateMap[date][item.category] += val;
+      dateMap[date].TOTAL += val;
+    });
+    return Object.values(dateMap).sort((a, b) => a.date.localeCompare(b.date));
   }, [data]);
 
   return (
@@ -157,6 +189,82 @@ const AllCategoryDashboardTable = ({ data }) => {
           </table>
         </div>
       </section>
+
+      {/* Daily Trend Line Chart */}
+      {dailyTrendData.length > 1 && (
+        <section className="glass-card overflow-hidden shadow-2xl">
+          <div className="p-4 sm:p-6 border-b border-border flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 bg-surface-alt/30">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                <Activity size={20} className="text-primary sm:size-[22px]" />
+              </div>
+              <div>
+                <h3 className="text-base sm:text-lg font-bold text-text leading-tight">Daily Production Trend</h3>
+                <p className="text-[10px] sm:text-xs text-text-muted">Total output per day from all cells combined</p>
+              </div>
+            </div>
+            <div className="self-start sm:self-auto px-3 py-1.5 rounded-lg bg-surface-alt border border-border">
+              <span className="text-[10px] sm:text-xs font-bold text-text-muted uppercase tracking-wider">{dailyTrendData.length} Days</span>
+            </div>
+          </div>
+          <div className="p-4 sm:p-6">
+            <div className="h-[380px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={dailyTrendData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
+                  <XAxis
+                    dataKey="date"
+                    stroke="var(--color-text-muted)"
+                    fontSize={11}
+                    tickLine={false}
+                    axisLine={false}
+                    tickFormatter={(val) => {
+                      const d = new Date(val);
+                      return d.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit' });
+                    }}
+                  />
+                  <YAxis
+                    stroke="var(--color-text-muted)"
+                    fontSize={11}
+                    tickLine={false}
+                    axisLine={false}
+                    tickFormatter={(v) => v.toLocaleString()}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'var(--color-bg)',
+                      border: '1px solid var(--color-border)',
+                      borderRadius: '0.75rem',
+                      color: 'var(--color-text)',
+                      fontSize: '12px'
+                    }}
+                    itemStyle={{ color: 'var(--color-text)' }}
+                    labelFormatter={(val) => {
+                      const d = new Date(val);
+                      return d.toLocaleDateString('id-ID', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
+                    }}
+                    formatter={(value) => [value.toLocaleString(), undefined]}
+                  />
+                  <Legend iconType="circle" />
+                  {CATEGORY_KEYS.map(cat => (
+                    <Line
+                      key={cat}
+                      type="monotone"
+                      dataKey={cat}
+                      name={CATEGORY_SHORT[cat]}
+                      stroke={CATEGORY_COLORS[cat]}
+                      strokeWidth={2.5}
+                      dot={{ r: 3, fill: CATEGORY_COLORS[cat], strokeWidth: 0 }}
+                      activeDot={{ r: 6, strokeWidth: 2, stroke: CATEGORY_COLORS[cat], fill: '#fff' }}
+                      animationDuration={1500}
+                    />
+                  ))}
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </section>
+      )}
     </div>
   );
 };

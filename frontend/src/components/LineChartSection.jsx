@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine, LabelList } from 'recharts';
+import { Activity } from 'lucide-react';
 
 const LineChartSection = ({ data, title, debugInfo }) => {
   // Transform data for Output/Day
@@ -37,6 +38,14 @@ const LineChartSection = ({ data, title, debugInfo }) => {
       return numA - numB;
     });
   }, [data]);
+
+  // Total per day (sum all cells)
+  const totalChartData = useMemo(() => {
+    return chartDataDay.map(day => {
+      const total = cellNames.reduce((sum, cell) => sum + (day[cell] || 0), 0);
+      return { name: day.name, total };
+    });
+  }, [chartDataDay, cellNames]);
 
   const colors = ['#06b6d4', '#84cc16', '#f59e0b', '#ef4444', '#3b82f6', '#a855f7'];
 
@@ -240,6 +249,70 @@ const LineChartSection = ({ data, title, debugInfo }) => {
           </table>
         </div>
       </div>
+
+      {/* Daily Total Trend Line Chart */}
+      {totalChartData.length > 1 && (
+        <div className="glass-card overflow-hidden shadow-2xl">
+          <div className="p-4 sm:p-6 border-b border-border flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 bg-surface-alt/30">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                <Activity size={20} className="text-primary" />
+              </div>
+              <div>
+                <h3 className="text-base sm:text-lg font-bold text-text leading-tight">Daily Total Output Trend</h3>
+                <p className="text-[10px] sm:text-xs text-text-muted">Total output per day from all cells combined</p>
+              </div>
+            </div>
+            <div className="px-3 py-1.5 rounded-lg bg-surface-alt border border-border">
+              <span className="text-[10px] sm:text-xs font-bold text-text-muted uppercase tracking-wider">{totalChartData.length} Days</span>
+            </div>
+          </div>
+          <div className="p-4 sm:p-6">
+            <div className="h-[350px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={totalChartData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
+                  <XAxis
+                    dataKey="name"
+                    stroke="var(--color-text-muted)"
+                    fontSize={11}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <YAxis
+                    stroke="var(--color-text-muted)"
+                    fontSize={11}
+                    tickLine={false}
+                    axisLine={false}
+                    tickFormatter={(v) => v.toLocaleString()}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'var(--color-bg)',
+                      border: '1px solid var(--color-border)',
+                      borderRadius: '0.75rem',
+                      color: 'var(--color-text)',
+                      fontSize: '12px'
+                    }}
+                    itemStyle={{ color: 'var(--color-text)' }}
+                    formatter={(value) => [value.toLocaleString(), 'Total Output']}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="total"
+                    name="Total Output"
+                    stroke="#06b6d4"
+                    strokeWidth={3}
+                    dot={{ r: 4, fill: '#06b6d4', strokeWidth: 2, stroke: '#0e7490' }}
+                    activeDot={{ r: 7, strokeWidth: 2, stroke: '#06b6d4', fill: '#0e7490' }}
+                    animationDuration={1500}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

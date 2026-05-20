@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { getHourlyTimeline } from '../api';
-import { Clock, TrendingUp, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Clock, TrendingUp, ChevronLeft, ChevronRight, Eye, EyeOff, ChevronDown } from 'lucide-react';
 
 const HOUR_COLUMNS = [
   '07:00 - 08:00', '08:00 - 09:00', '09:00 - 10:00', '10:00 - 11:00',
@@ -12,13 +12,19 @@ const HOUR_COLUMNS = [
 const CATEGORY_CELL_MAPPING = {
   'CUTTING + PREPARATION': ['Cell 3', 'Cell 4', 'Cell 5', 'Cell 9', 'Cell 10', 'Cell 11'],
   'COMPUTER STITCHING': ['Cell 3', 'Cell 4', 'Cell 5', 'Cell 9', 'Cell 10'],
-  'SEWING': ['Cell 3', 'Cell 4', 'Cell 5', 'Cell 9', 'Cell 10', 'Cell 11', 'Cell D6', 'Cell BZ'],
+  'SEWING': ['Cell 3', 'Cell 4', 'Cell 5', 'Cell 9', 'Cell 10', 'Cell 11', 'Cell D3', 'Cell D5', 'Cell D6', 'Cell D7', 'Cell BZ'],
   'ASSEMBLY': ['Cell 4', 'Cell 5', 'Cell 9', 'Cell 10', 'Cell 11'],
 };
 
-const HourlyTimeline = ({ filterMode, filterValue, filterCell, category, title = "Hourly Production Timeline", onCellClick, refreshTrigger }) => {
+const HourlyTimeline = ({ filterMode, filterValue, filterCell, category, title = "Hourly Production Timeline", onCellClick, refreshTrigger, hiddenCells, setHiddenCells }) => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [showInput, setShowInput] = useState(false);
+  const [isManageOpen, setIsManageOpen] = useState(false);
+
+  const visibleData = useMemo(() => {
+    return data.filter(row => !hiddenCells.includes(row.cell));
+  }, [data, hiddenCells]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -30,7 +36,7 @@ const HourlyTimeline = ({ filterMode, filterValue, filterCell, category, title =
       const res = await getHourlyTimeline(params);
       let timelineData = res.data;
 
-      const CELL_ORDER = ['Cell 3', 'Cell 4', 'Cell 5', 'Cell 9', 'Cell 10', 'Cell 11', 'Cell D6', 'Cell BZ'];
+      const CELL_ORDER = ['Cell 3', 'Cell 4', 'Cell 5', 'Cell 9', 'Cell 10', 'Cell 11', 'Cell D3', 'Cell D5', 'Cell D6', 'Cell D7', 'Cell BZ'];
       const defaultCells = CATEGORY_CELL_MAPPING[category] || CELL_ORDER;
 
       // If viewing all cells, ensure the category-specific default list is always present
@@ -101,6 +107,67 @@ const HourlyTimeline = ({ filterMode, filterValue, filterCell, category, title =
           </div>
         </div>
         <div className="flex items-center gap-3 sm:gap-4">
+            {/* Manage Cells Dropdown */}
+            <div className="relative">
+              <button 
+                onClick={() => setIsManageOpen(!isManageOpen)}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-surface hover:bg-surface-alt border border-border text-[10px] sm:text-xs font-bold text-text-muted hover:text-text transition-colors"
+              >
+                <Eye size={14} />
+                <span>Cells ({(CATEGORY_CELL_MAPPING[category] || []).filter(c => !hiddenCells.includes(c)).length}/{(CATEGORY_CELL_MAPPING[category] || []).length})</span>
+                <ChevronDown size={12} className={`transition-transform duration-200 ${isManageOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {isManageOpen && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setIsManageOpen(false)} />
+                  <div className="absolute right-0 mt-2 w-56 rounded-xl bg-surface-strong border border-border shadow-2xl p-3 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                    <div className="flex items-center justify-between pb-2 mb-2 border-b border-border/50">
+                      <span className="text-xs font-black text-text uppercase tracking-wider">Show/Hide Cells</span>
+                      <button 
+                        onClick={() => setHiddenCells(prev => prev.filter(c => !(CATEGORY_CELL_MAPPING[category] || []).includes(c)))}
+                        className="text-[10px] text-primary hover:underline font-bold"
+                      >
+                        Show All
+                      </button>
+                    </div>
+                    <div className="space-y-1.5 max-h-60 overflow-y-auto scrollbar-thin pr-1">
+                      {(CATEGORY_CELL_MAPPING[category] || []).map(cell => {
+                        const isVisible = !hiddenCells.includes(cell);
+                        return (
+                          <label 
+                            key={cell} 
+                            className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-white/5 cursor-pointer text-xs font-bold text-text-muted hover:text-text transition-colors"
+                          >
+                            <input 
+                              type="checkbox"
+                              checked={isVisible}
+                              onChange={() => {
+                                if (isVisible) {
+                                  setHiddenCells(prev => [...prev, cell]);
+                                } else {
+                                  setHiddenCells(prev => prev.filter(c => c !== cell));
+                                }
+                              }}
+                              className="rounded border-border text-primary focus:ring-primary/50 bg-bg"
+                            />
+                            <span>{cell}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+
+            <button 
+              onClick={() => setShowInput(!showInput)}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-surface hover:bg-surface-alt border border-border text-[10px] sm:text-xs font-bold text-text-muted hover:text-text transition-colors"
+            >
+              {showInput ? <EyeOff size={14} /> : <Eye size={14} />}
+              <span className="hidden sm:inline">{showInput ? 'Hide Input' : 'Show Input'}</span>
+            </button>
             <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-surface-alt border border-border">
                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                 <span className="text-[8px] sm:text-[10px] font-bold text-text-muted uppercase tracking-wider">Target Met</span>
@@ -120,9 +187,19 @@ const HourlyTimeline = ({ filterMode, filterValue, filterCell, category, title =
                 Cell Name
               </th>
               {HOUR_COLUMNS.map(hour => (
-                <th key={hour} className="py-4 px-2 sm:px-4 text-center text-[10px] font-bold text-[var(--color-table-header-text)] uppercase tracking-widest border-b border-border min-w-[80px] sm:min-w-[100px]">
-                  <span className="block sm:hidden">{hour.split(' - ')[0]}</span>
-                  <span className="hidden sm:block">{hour}</span>
+                <th key={hour} className="p-0 border-b border-r border-border min-w-[80px] sm:min-w-[120px]">
+                  <div className="flex flex-col h-full w-full">
+                    <div className={`py-2 px-2 text-center text-[10px] font-bold text-[var(--color-table-header-text)] uppercase tracking-widest ${showInput ? 'border-b border-border' : ''}`}>
+                      <span className="block sm:hidden">{hour.split(' - ')[0]}</span>
+                      <span className="hidden sm:block">{hour}</span>
+                    </div>
+                    {showInput && (
+                      <div className="flex w-full divide-x divide-border">
+                        <div className="flex-1 py-1.5 text-center text-[9px] font-bold text-primary uppercase">Input</div>
+                        <div className="flex-1 py-1.5 text-center text-[9px] font-bold text-[var(--color-table-header-text)] uppercase">Out</div>
+                      </div>
+                    )}
+                  </div>
                 </th>
               ))}
               <th className="sticky right-0 z-30 bg-primary/10 backdrop-blur-md py-4 px-4 sm:px-6 text-right text-[10px] font-bold text-primary uppercase tracking-widest border-b border-l border-border min-w-[80px] sm:min-w-[100px]">
@@ -140,58 +217,118 @@ const HourlyTimeline = ({ filterMode, filterValue, filterCell, category, title =
                   </div>
                 </td>
               </tr>
-            ) : data.length === 0 ? (
+            ) : visibleData.length === 0 ? (
               <tr>
                 <td colSpan={HOUR_COLUMNS.length + 2} className="text-center py-20 opacity-40">
-                    <p className="text-sm font-bold text-text-muted uppercase tracking-widest">No Hourly Data</p>
+                    <p className="text-sm font-bold text-text-muted uppercase tracking-widest">No Active Cells</p>
+                    <p className="text-xs text-text-muted mt-1">All cells are hidden. Enable them from the "Cells" dropdown.</p>
                 </td>
               </tr>
             ) : (
-              data.map((row, idx) => (
+              visibleData.map((row, idx) => (
                 <tr key={row.cell} className="hover:bg-white/[0.02] transition-colors group">
                   <td className="sticky left-0 z-20 bg-bg/95 group-hover:bg-surface-alt/80 backdrop-blur-sm py-3 sm:py-4 px-4 sm:px-6 border-r border-border transition-colors">
-                    <span className="text-xs sm:text-sm font-black text-text group-hover:text-primary-light transition-colors uppercase whitespace-nowrap">
-                      {row.cell}
-                    </span>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs sm:text-sm font-black text-text group-hover:text-primary-light transition-colors uppercase whitespace-nowrap">
+                        {row.cell}
+                      </span>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setHiddenCells(prev => [...prev, row.cell]);
+                        }}
+                        className="opacity-0 group-hover:opacity-100 text-text-muted hover:text-red-400 transition-all p-1 rounded hover:bg-surface-alt"
+                        title={`Hide ${row.cell}`}
+                      >
+                        <EyeOff size={14} />
+                      </button>
+                    </div>
                   </td>
                   {HOUR_COLUMNS.map(hour => {
-                    const cellData = row[hour] || { total: 0, logs: [] };
+                    const cellData = row[hour] || { total: 0, input_total: 0, logs: [] };
                     const val = cellData.total;
+                    const inputVal = cellData.input_total || 0;
                     return (
                       <td 
                         key={hour} 
-                        className="py-1.5 sm:py-2 px-1 sm:px-2 text-center border-r border-border/30 last:border-r-0 cursor-pointer hover:bg-white/5 transition-colors"
-                        onClick={() => onCellClick && onCellClick(row.cell, hour, cellData.logs)}
+                        className="p-0 border-r border-border/30 last:border-r-0 cursor-pointer hover:bg-white/5 transition-colors align-top h-full"
                       >
-                        <div className={`py-1.5 sm:py-2 px-1 rounded-lg font-black text-xs sm:text-sm transition-all duration-300 shadow-sm ${getHeatmapClass(val)}`}>
-                          {val > 0 ? val.toLocaleString() : '-'}
-                        </div>
+                        {showInput ? (
+                          <div className="flex w-full h-full divide-x divide-border/30 min-h-[40px]">
+                            <div 
+                              className="flex-1 p-1 sm:p-1.5 flex items-center justify-center bg-primary/5 hover:bg-primary/10 transition-colors"
+                              onClick={() => onCellClick && onCellClick(row.cell, hour, cellData.logs, 'input')}
+                            >
+                              <span className="font-bold text-[10px] sm:text-xs text-primary">
+                                {inputVal > 0 ? inputVal.toLocaleString() : '-'}
+                              </span>
+                            </div>
+                            <div 
+                              className="flex-1 p-1 sm:p-1.5 flex items-center justify-center hover:bg-white/10 transition-colors"
+                              onClick={() => onCellClick && onCellClick(row.cell, hour, cellData.logs, 'output')}
+                            >
+                              <div className={`w-full h-full min-h-[24px] flex items-center justify-center rounded-md font-black text-[10px] sm:text-xs shadow-sm ${getHeatmapClass(val)}`} title="Output">
+                                {val > 0 ? val.toLocaleString() : '-'}
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          <div 
+                            className="p-1.5 sm:p-2 h-full flex items-center justify-center hover:bg-white/10 transition-colors"
+                            onClick={() => onCellClick && onCellClick(row.cell, hour, cellData.logs, 'output')}
+                          >
+                            <div className={`w-full py-1.5 px-1 rounded-lg font-black text-xs sm:text-sm text-center transition-all duration-300 shadow-sm ${getHeatmapClass(val)}`} title="Output">
+                              {val > 0 ? val.toLocaleString() : '-'}
+                            </div>
+                          </div>
+                        )}
                       </td>
                     );
                   })}
-                  <td className="sticky right-0 z-20 bg-primary/5 group-hover:bg-primary/10 backdrop-blur-sm py-3 sm:py-4 px-4 sm:px-6 text-right font-black text-primary-light border-l border-border transition-colors">
-                    {row.total_all.toLocaleString()}
+                  <td className="sticky right-0 z-20 bg-primary/5 group-hover:bg-primary/10 backdrop-blur-sm py-3 sm:py-4 px-4 sm:px-6 text-right font-black text-primary-light border-l border-border transition-colors align-top">
+                    <div className="flex flex-col gap-1 items-end">
+                      <span>{row.total_all.toLocaleString()}</span>
+                    </div>
                   </td>
                 </tr>
               ))
             )}
           </tbody>
-          {data.length > 0 && (
+          {visibleData.length > 0 && (
             <tfoot className="bg-surface-alt/30 border-t-2 border-border">
               <tr className="font-bold">
-                <td className="sticky left-0 z-30 py-4 sm:py-5 px-4 sm:px-6 text-[10px] uppercase tracking-widest text-text-muted border-r border-border" style={{ backgroundColor: 'var(--color-table-header)' }}>
-                  Hourly Total
+                <td className="sticky left-0 z-30 py-4 sm:py-5 px-4 sm:px-6 text-[10px] uppercase tracking-widest text-text-muted border-r border-border align-top" style={{ backgroundColor: 'var(--color-table-header)' }}>
+                  <div className="flex flex-col gap-2">
+                    <span>Hourly Total</span>
+                    {showInput && <span className="text-primary opacity-80">Hourly Input</span>}
+                  </div>
                 </td>
                 {HOUR_COLUMNS.map(hour => {
-                  const hourlyTotal = data.reduce((acc, r) => acc + (r[hour]?.total || 0), 0);
+                  const hourlyTotal = visibleData.reduce((acc, r) => acc + (r[hour]?.total || 0), 0);
+                  const hourlyInputTotal = visibleData.reduce((acc, r) => acc + (r[hour]?.input_total || 0), 0);
                   return (
-                    <td key={hour} className="py-4 sm:py-5 px-2 sm:px-4 text-center text-xs sm:text-sm text-text border-r border-border/30 last:border-r-0">
-                      {hourlyTotal.toLocaleString()}
+                    <td key={hour} className="p-0 border-r border-border/30 last:border-r-0 align-top">
+                      {showInput ? (
+                        <div className="flex w-full h-full divide-x divide-border/30 min-h-[40px]">
+                          <div className="flex-1 p-2 sm:p-3 flex items-center justify-center bg-primary/5">
+                            <span className="text-[10px] sm:text-xs font-bold text-primary">{hourlyInputTotal.toLocaleString()}</span>
+                          </div>
+                          <div className="flex-1 p-2 sm:p-3 flex items-center justify-center">
+                            <span className="font-bold text-xs sm:text-sm text-text">{hourlyTotal.toLocaleString()}</span>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="p-4 sm:p-5 flex items-center justify-center">
+                          <span className="font-bold text-xs sm:text-sm text-text">{hourlyTotal.toLocaleString()}</span>
+                        </div>
+                      )}
                     </td>
                   );
                 })}
-                <td className="sticky right-0 z-30 bg-primary/10 backdrop-blur-md py-4 sm:py-5 px-4 sm:px-6 text-right text-base sm:text-lg text-primary border-l border-border">
-                  {data.reduce((acc, r) => acc + r.total_all, 0).toLocaleString()}
+                <td className="sticky right-0 z-30 bg-primary/10 backdrop-blur-md py-4 sm:py-5 px-4 sm:px-6 text-right text-base sm:text-lg text-primary border-l border-border align-top">
+                  <div className="flex flex-col gap-1 items-end">
+                    <span>{visibleData.reduce((acc, r) => acc + r.total_all, 0).toLocaleString()}</span>
+                  </div>
                 </td>
               </tr>
             </tfoot>

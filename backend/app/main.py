@@ -88,6 +88,7 @@ class HourlyInputModel(BaseModel):
     date: date
     hour_range: str
     output: int
+    input_qty: Optional[int] = 0
     b_grade: int
     c_grade: int
     note: Optional[str] = None
@@ -116,6 +117,7 @@ def create_hourly_log(log: HourlyInputModel, db: Session = Depends(database.get_
 
     if existing:
         existing.output = log.output
+        existing.input_qty = log.input_qty or 0
         existing.b_grade = log.b_grade
         existing.c_grade = log.c_grade
         existing.note = log.note
@@ -128,6 +130,7 @@ def create_hourly_log(log: HourlyInputModel, db: Session = Depends(database.get_
             date=log.date,
             hour_range=log.hour_range,
             output=log.output,
+            input_qty=log.input_qty or 0,
             b_grade=log.b_grade,
             c_grade=log.c_grade,
             note=log.note
@@ -148,6 +151,7 @@ def update_hourly_log(log_id: int, log: HourlyInputModel, db: Session = Depends(
     record.date = log.date
     record.hour_range = log.hour_range
     record.output = log.output
+    record.input_qty = log.input_qty or 0
     record.b_grade = log.b_grade
     record.c_grade = log.c_grade
     record.note = log.note
@@ -171,6 +175,7 @@ def get_hourly_summary(date_filter: Optional[date] = None, month_filter: Optiona
         models.HourlyProduction.cell,
         models.HourlyProduction.category,
         func.sum(models.HourlyProduction.output + models.HourlyProduction.b_grade + models.HourlyProduction.c_grade).label('total_output'),
+        func.sum(models.HourlyProduction.input_qty).label('total_input'),
         func.sum(models.HourlyProduction.b_grade).label('total_b_grade'),
         func.sum(models.HourlyProduction.c_grade).label('total_c_grade'),
         func.group_concat(models.HourlyProduction.note).label('notes')
@@ -186,11 +191,12 @@ def get_hourly_summary(date_filter: Optional[date] = None, month_filter: Optiona
     
     # Pivot the data
     summary_map = {}
-    for cell, category, total, b_grade, c_grade, notes in results:
+    for cell, category, total, total_input, b_grade, c_grade, notes in results:
         if cell not in summary_map:
-            summary_map[cell] = {"cell": cell, "total_all": 0, "total_b_grade": 0, "total_c_grade": 0, "notes_set": set()}
+            summary_map[cell] = {"cell": cell, "total_all": 0, "total_input": 0, "total_b_grade": 0, "total_c_grade": 0, "notes_set": set()}
         summary_map[cell][category] = total
         summary_map[cell]["total_all"] += total
+        summary_map[cell]["total_input"] += (total_input or 0)
         summary_map[cell]["total_b_grade"] += (b_grade or 0)
         summary_map[cell]["total_c_grade"] += (c_grade or 0)
         if notes:
@@ -235,11 +241,13 @@ def get_hourly_timeline(category: Optional[str] = None, date_filter: Optional[da
         if hour not in timeline_map[cell]:
             timeline_map[cell][hour] = {
                 "total": 0,
+                "input_total": 0,
                 "logs": []
             }
         
         total_val = (log.output or 0) + (log.b_grade or 0) + (log.c_grade or 0)
         timeline_map[cell][hour]["total"] += total_val
+        timeline_map[cell][hour]["input_total"] += (log.input_qty or 0)
         timeline_map[cell][hour]["logs"].append({
             "id": log.id,
             "category": log.category,
@@ -247,6 +255,7 @@ def get_hourly_timeline(category: Optional[str] = None, date_filter: Optional[da
             "date": log.date.isoformat() if hasattr(log.date, 'isoformat') else str(log.date),
             "hour_range": log.hour_range,
             "output": log.output,
+            "input_qty": log.input_qty or 0,
             "b_grade": log.b_grade,
             "c_grade": log.c_grade,
             "note": log.note
