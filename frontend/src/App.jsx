@@ -31,6 +31,7 @@ function App() {
   const [marketingData, setMarketingData] = useState([]);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark');
+  const [selectedModel, setSelectedModel] = useState('603');
 
   // Theme effect
   useEffect(() => {
@@ -71,7 +72,7 @@ function App() {
 
   const fetchCategories = async () => {
     try {
-      const res = await getCategories();
+      const res = await getCategories(selectedModel);
       // Start with ALL CATEGORY
       const sorted = ['ALL CATEGORY'];
 
@@ -94,7 +95,7 @@ function App() {
   const fetchData = async (silent = false) => {
     if (!silent) setLoading(true);
     try {
-      const res = await getProductionData();
+      const res = await getProductionData(undefined, selectedModel);
       setData(res.data);
     } catch (err) {
       console.error("Failed to fetch data", err);
@@ -105,7 +106,7 @@ function App() {
 
   const fetchHourlyDates = async () => {
     try {
-      const res = await getHourlyDates();
+      const res = await getHourlyDates(selectedModel);
       setHourlyDates(res.data);
       // Set default filterValue if empty
       if (res.data.length > 0 && !filterValue) {
@@ -119,7 +120,7 @@ function App() {
   const fetchMarketingData = async () => {
     try {
       const { getMarketingData } = await import('./api');
-      const res = await getMarketingData();
+      const res = await getMarketingData(selectedModel);
       setMarketingData(res.data);
     } catch (err) {
       console.error("Failed to fetch marketing data", err);
@@ -130,10 +131,8 @@ function App() {
     try {
       const params = {};
       if (filterMode === 'day') params.date_filter = filterValue;
-      // Note: Backend might need update for month_filter in hourly-logs if needed, 
-      // but for now we focus on daily snapshot as requested by user.
 
-      const res = await getHourlyLogs(params);
+      const res = await getHourlyLogs(params, selectedModel);
       setHourlyDashboardData(res.data);
     } catch (err) {
       console.error("Failed to fetch hourly dashboard data", err);
@@ -158,7 +157,7 @@ function App() {
     }, 15000); // 15 seconds
 
     return () => clearInterval(interval);
-  }, []);
+  }, [selectedModel]);
 
   // Fetch hourly dashboard data when filters or menu changes
   useEffect(() => {
@@ -166,7 +165,7 @@ function App() {
       fetchHourlyDashboardData();
       if (dashboardType === 'marketing') fetchMarketingData();
     }
-  }, [activeMenu, filterMode, filterValue, dashboardType]);
+  }, [dashboardType, activeMenu, filterMode, filterValue, selectedModel]);
 
   // Get unique dates based on active menu (Production vs Hourly/Visitor)
   const availableDates = useMemo(() => {
@@ -288,6 +287,8 @@ function App() {
       <div className={`fixed inset-y-0 left-0 z-50 transform lg:relative lg:translate-x-0 transition-transform duration-300 ease-in-out ${isMobileMenuOpen ? 'translate-x-0 shadow-2xl shadow-black/50' : '-translate-x-full'}`}>
         <Sidebar
           activeMenu={activeMenu}
+          selectedModel={selectedModel}
+          onSelectModel={setSelectedModel}
           onSelectMenu={(menu) => {
             setActiveMenu(menu);
             setIsMobileMenuOpen(false); // Auto close on mobile
@@ -358,7 +359,7 @@ function App() {
                   filterValue={filterValue}
                 />
               ) : activeMenu === 'hourly' ? (
-                <HourlyLogs />
+                <HourlyLogs selectedModel={selectedModel} />
               ) : activeMenu === 'hourly_summary' ? (
                 <HourlySummary
                   filterMode={filterMode}
@@ -386,7 +387,7 @@ function App() {
                     </div>
                   )
                 ) : (
-                  <MarketingDashboardTable data={marketingData} />
+                  <MarketingDashboardTable data={marketingData} selectedModel={selectedModel} />
                 )
               ) : (
                 <div>
@@ -407,6 +408,7 @@ function App() {
       {isUploadOpen && (
         <UploadModal
           initialType={dashboardType === 'marketing' ? 'marketing' : 'production'}
+          selectedModel={selectedModel}
           onClose={() => setIsUploadOpen(false)}
           onSuccess={() => {
             fetchCategories();

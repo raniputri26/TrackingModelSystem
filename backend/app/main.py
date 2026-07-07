@@ -48,7 +48,7 @@ async def list_sheets(file: UploadFile = File(...)):
             os.remove(temp_path)
 
 @app.post("/upload")
-async def upload_excel(file: UploadFile = File(...), sheet_name: str = "Summary", db: Session = Depends(database.get_db)):
+async def upload_excel(file: UploadFile = File(...), sheet_name: str = "Summary", model_name: str = "603", db: Session = Depends(database.get_db)):
     if not file.filename.endswith(('.xlsx', '.xls', '.xlsm', '.xltx', '.xltm')):
         raise HTTPException(status_code=400, detail="Invalid file format. Please upload an Excel file.")
     
@@ -58,7 +58,7 @@ async def upload_excel(file: UploadFile = File(...), sheet_name: str = "Summary"
         shutil.copyfileobj(file.file, buffer)
     
     try:
-        count = excel_processor.parse_tracking_excel(temp_path, db, sheet_name=sheet_name)
+        count = excel_processor.parse_tracking_excel(temp_path, db, sheet_name=sheet_name, model_name=model_name)
         return {"message": "Success", "records_processed": count}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -67,8 +67,8 @@ async def upload_excel(file: UploadFile = File(...), sheet_name: str = "Summary"
             os.remove(temp_path)
 
 @app.get("/data")
-def get_data(category: str = None, db: Session = Depends(database.get_db)):
-    query = db.query(models.ProductionData)
+def get_data(category: str = None, model_name: str = "603", db: Session = Depends(database.get_db)):
+    query = db.query(models.ProductionData).filter(models.ProductionData.model_name == model_name)
     if category:
         query = query.filter(models.ProductionData.category == category)
     
@@ -76,8 +76,8 @@ def get_data(category: str = None, db: Session = Depends(database.get_db)):
     return results
 
 @app.get("/categories")
-def get_categories(db: Session = Depends(database.get_db)):
-    cats = db.query(models.ProductionData.category).distinct().all()
+def get_categories(model_name: str = "603", db: Session = Depends(database.get_db)):
+    cats = db.query(models.ProductionData.category).filter(models.ProductionData.model_name == model_name).distinct().all()
     return [c[0] for c in cats]
 
 # --- HOURLY INPUT ENDPOINTS ---
@@ -92,10 +92,11 @@ class HourlyInputModel(BaseModel):
     b_grade: int
     c_grade: int
     note: Optional[str] = None
+    model_name: str = "603"
 
 @app.get("/hourly-logs")
-def get_hourly_logs(category: Optional[str] = None, cell: Optional[str] = None, date_filter: Optional[date] = None, db: Session = Depends(database.get_db)):
-    query = db.query(models.HourlyProduction)
+def get_hourly_logs(category: Optional[str] = None, cell: Optional[str] = None, date_filter: Optional[date] = None, model_name: str = "603", db: Session = Depends(database.get_db)):
+    query = db.query(models.HourlyProduction).filter(models.HourlyProduction.model_name == model_name)
     if category and category != 'all':
         query = query.filter(models.HourlyProduction.category == category)
     if cell and cell != 'all':
@@ -109,6 +110,7 @@ def get_hourly_logs(category: Optional[str] = None, cell: Optional[str] = None, 
 def create_hourly_log(log: HourlyInputModel, db: Session = Depends(database.get_db)):
     # Check if exists (upsert logic)
     existing = db.query(models.HourlyProduction).filter(
+        models.HourlyProduction.model_name == log.model_name,
         models.HourlyProduction.category == log.category,
         models.HourlyProduction.cell == log.cell,
         models.HourlyProduction.date == log.date,
@@ -125,6 +127,7 @@ def create_hourly_log(log: HourlyInputModel, db: Session = Depends(database.get_
         return {"message": "Updated existing log", "id": existing.id}
     else:
         new_log = models.HourlyProduction(
+            model_name=log.model_name,
             category=log.category,
             cell=log.cell,
             date=log.date,
@@ -169,7 +172,7 @@ def delete_hourly_log(log_id: int, db: Session = Depends(database.get_db)):
     return {"message": "Deleted successfully"}
 
 @app.get("/hourly-summary")
-def get_hourly_summary(date_filter: Optional[date] = None, month_filter: Optional[str] = None, db: Session = Depends(database.get_db)):
+def get_hourly_summary(date_filter: Optional[date] = None, month_filter: Optional[str] = None, model_name: str = "603", db: Session = Depends(database.get_db)):
     # Query to sum output + b_grade + c_grade grouped by cell and category
     query = db.query(
         models.HourlyProduction.cell,
@@ -180,6 +183,7 @@ def get_hourly_summary(date_filter: Optional[date] = None, month_filter: Optiona
         func.sum(models.HourlyProduction.c_grade).label('total_c_grade'),
         func.group_concat(models.HourlyProduction.note).label('notes')
     )
+    query = query.filter(models.HourlyProduction.model_name == model_name)
     
     if date_filter:
         query = query.filter(models.HourlyProduction.date == date_filter)
@@ -214,9 +218,9 @@ def get_hourly_summary(date_filter: Optional[date] = None, month_filter: Optiona
     return sorted(final_results, key=lambda x: x['cell'])
 
 @app.get("/hourly-timeline")
-def get_hourly_timeline(category: Optional[str] = None, date_filter: Optional[date] = None, month_filter: Optional[str] = None, db: Session = Depends(database.get_db)):
+def get_hourly_timeline(category: Optional[str] = None, date_filter: Optional[date] = None, month_filter: Optional[str] = None, model_name: str = "603", db: Session = Depends(database.get_db)):
     # Fetch records to allow access to individual IDs and details
-    query = db.query(models.HourlyProduction)
+    query = db.query(models.HourlyProduction).filter(models.HourlyProduction.model_name == model_name)
     
     if category and category != 'ALL CATEGORY':
         query = query.filter(models.HourlyProduction.category == category)
@@ -265,8 +269,8 @@ def get_hourly_timeline(category: Optional[str] = None, date_filter: Optional[da
     return sorted(list(timeline_map.values()), key=lambda x: x['cell'])
 
 @app.get("/hourly-dates")
-def get_hourly_dates(db: Session = Depends(database.get_db)):
-    prod_dates = db.query(models.HourlyProduction.date).distinct().all()
+def get_hourly_dates(model_name: str = "603", db: Session = Depends(database.get_db)):
+    prod_dates = db.query(models.HourlyProduction.date).filter(models.HourlyProduction.model_name == model_name).distinct().all()
     visitor_dates = db.query(func.date(models.VisitorLog.visited_at)).distinct().all()
     
     all_dates = set()
@@ -401,7 +405,7 @@ def get_visitors(
 # --- MARKETING ENDPOINTS ---
 
 @app.post("/upload-marketing")
-async def upload_marketing_excel(file: UploadFile = File(...), sheet_name: str = "Summary", db: Session = Depends(database.get_db)):
+async def upload_marketing_excel(file: UploadFile = File(...), sheet_name: str = "Summary", model_name: str = "603", db: Session = Depends(database.get_db)):
     if not file.filename.endswith(('.xlsx', '.xls', '.xlsm')):
         raise HTTPException(status_code=400, detail="Format file tidak didukung.")
     
@@ -410,7 +414,7 @@ async def upload_marketing_excel(file: UploadFile = File(...), sheet_name: str =
         shutil.copyfileobj(file.file, buffer)
     
     try:
-        count = excel_processor.parse_marketing_excel(temp_path, db, sheet_name=sheet_name)
+        count = excel_processor.parse_marketing_excel(temp_path, db, sheet_name=sheet_name, model_name=model_name)
         return {"message": "Success", "records_processed": count}
     except Exception as e:
         import traceback
@@ -421,5 +425,5 @@ async def upload_marketing_excel(file: UploadFile = File(...), sheet_name: str =
             os.remove(temp_path)
 
 @app.get("/marketing-data")
-def get_marketing_data(db: Session = Depends(database.get_db)):
-    return db.query(models.MarketingData).order_by(models.MarketingData.date.asc()).all()
+def get_marketing_data(model_name: str = "603", db: Session = Depends(database.get_db)):
+    return db.query(models.MarketingData).filter(models.MarketingData.model_name == model_name).order_by(models.MarketingData.date.asc()).all()

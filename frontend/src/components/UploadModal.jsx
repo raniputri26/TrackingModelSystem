@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, FileUp, CheckCircle, AlertCircle, Loader2, List } from 'lucide-react';
 import { uploadExcel, listSheets, uploadMarketingExcel } from '../api';
 
-const UploadModal = ({ onClose, onSuccess, initialType = 'production' }) => {
+const UploadModal = ({ onClose, onSuccess, initialType = 'production', selectedModel = '603' }) => {
   const [file, setFile] = useState(null);
   const [sheets, setSheets] = useState([]);
   const [selectedSheet, setSelectedSheet] = useState('Summary');
@@ -38,9 +38,9 @@ const UploadModal = ({ onClose, onSuccess, initialType = 'production' }) => {
     try {
       let res;
       if (uploadType === 'marketing') {
-        res = await uploadMarketingExcel(file, selectedSheet);
+        res = await uploadMarketingExcel(file, selectedSheet, selectedModel);
       } else {
-        res = await uploadExcel(file, selectedSheet);
+        res = await uploadExcel(file, selectedSheet, selectedModel);
       }
       setStatus('success');
       setMessage(`Successfully processed ${res.data.records_processed} records.`);

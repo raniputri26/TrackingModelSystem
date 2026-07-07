@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { LayoutDashboard, Activity, Clock, Pin, PinOff, BarChart3, Users } from 'lucide-react';
 
-const Sidebar = ({ activeMenu, onSelectMenu }) => {
+const Sidebar = ({ activeMenu, onSelectMenu, selectedModel, onSelectModel }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   return (
@@ -78,7 +78,30 @@ const Sidebar = ({ activeMenu, onSelectMenu }) => {
       </nav>
 
       {/* Footer Area */}
-      <div className="mt-auto mb-6 mx-3">
+      <div className="mt-auto mb-6 mx-3 flex flex-col gap-3">
+        {/* Model Switcher */}
+        <div className={`transition-all duration-300 ease-in-out overflow-hidden ${isCollapsed ? 'max-h-[8rem]' : 'glass-card p-3 mx-1'}`}>
+          <div className={`transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${isCollapsed ? 'max-w-0 opacity-0 h-0 m-0' : 'max-w-full opacity-100 mb-2'}`}>
+            <p className="text-xs text-text-muted font-semibold tracking-wide">Model Selection</p>
+          </div>
+          <div className={`flex ${isCollapsed ? 'flex-col items-center' : 'flex-row'} gap-2`}>
+            <button
+              onClick={() => onSelectModel('603')}
+              className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-colors ${selectedModel === '603' ? 'bg-primary text-white' : 'bg-surface hover:bg-sidebar-hover text-text-muted'}`}
+              title="Switch to Model 603"
+            >
+              603
+            </button>
+            <button
+              onClick={() => onSelectModel('9060')}
+              className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-colors ${selectedModel === '9060' ? 'bg-primary text-white' : 'bg-surface hover:bg-sidebar-hover text-text-muted'}`}
+              title="Switch to Model 9060"
+            >
+              9060
+            </button>
+          </div>
+        </div>
+
         <div className={`transition-all duration-300 ease-in-out overflow-hidden ${isCollapsed ? 'max-h-[3rem]' : 'glass-card p-4 mx-1 max-h-[5rem]'}`}>
           <div className={`transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${isCollapsed ? 'max-w-0 opacity-0 h-0 m-0' : 'max-w-full opacity-100 mb-1'}`}>
             <p className="text-xs text-text-muted">Status System</p>

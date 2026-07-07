@@ -16,7 +16,7 @@ const CATEGORY_CELL_MAPPING = {
   'ASSEMBLY': ['Cell 4', 'Cell 5', 'Cell 9', 'Cell 10', 'Cell 11'],
 };
 
-const HourlyTimeline = ({ filterMode, filterValue, filterCell, category, title = "Hourly Production Timeline", onCellClick, refreshTrigger, hiddenCells, setHiddenCells }) => {
+const HourlyTimeline = ({ filterMode, filterValue, filterCell, category, title = "Hourly Production Timeline", onCellClick, refreshTrigger, hiddenCells, setHiddenCells, selectedModel }) => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showInput, setShowInput] = useState(false);
@@ -33,7 +33,7 @@ const HourlyTimeline = ({ filterMode, filterValue, filterCell, category, title =
       if (filterMode === 'day') params.date_filter = filterValue;
       else if (filterMode === 'month') params.month_filter = filterValue;
 
-      const res = await getHourlyTimeline(params);
+      const res = await getHourlyTimeline(params, selectedModel);
       let timelineData = res.data;
 
       const CELL_ORDER = ['Cell 3', 'Cell 4', 'Cell 5', 'Cell 9', 'Cell 10', 'Cell 11', 'Cell D3', 'Cell D5', 'Cell D6', 'Cell D7', 'Cell BZ'];
@@ -86,7 +86,7 @@ const HourlyTimeline = ({ filterMode, filterValue, filterCell, category, title =
     fetchData();
     const interval = setInterval(fetchData, 15000);
     return () => clearInterval(interval);
-  }, [filterMode, filterValue, filterCell, category, refreshTrigger]);
+  }, [filterMode, filterValue, filterCell, category, refreshTrigger, selectedModel]);
 
   const getHeatmapClass = (value) => {
     if (!value || value === 0) return 'text-text-muted/20';

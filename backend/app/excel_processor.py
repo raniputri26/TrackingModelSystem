@@ -15,7 +15,7 @@ def get_sheet_names(file_path: str):
         raise ValueError(f"Could not read sheets: {str(e)}")
 
 
-def parse_tracking_excel(file_path: str, db: Session, sheet_name: str = "Summary"):
+def parse_tracking_excel(file_path: str, db: Session, sheet_name: str = "Summary", model_name: str = "603"):
     """Parse tracking Excel with dynamic column detection."""
 
     # Load workbook twice: once for values, once for font colors
@@ -328,6 +328,7 @@ def parse_tracking_excel(file_path: str, db: Session, sheet_name: str = "Summary
                         seen_keys.add(rec_key)
 
                         existing = db.query(models.ProductionData).filter(
+                            models.ProductionData.model_name == model_name,
                             models.ProductionData.category == found_cat,
                             models.ProductionData.cell == cell_name,
                             models.ProductionData.date == date_obj
@@ -344,6 +345,7 @@ def parse_tracking_excel(file_path: str, db: Session, sheet_name: str = "Summary
                             existing.hour_status = hour_status
                         else:
                             db.add(models.ProductionData(
+                                model_name=model_name,
                                 category=found_cat, cell=cell_name,
                                 working_period=wp, date=date_obj,
                                 std_mp=std, act_mp=act, gap=gap,
@@ -383,7 +385,7 @@ def parse_tracking_excel(file_path: str, db: Session, sheet_name: str = "Summary
     return records_added
 
 
-def parse_marketing_excel(file_path: str, db: Session, sheet_name: str = "Summary"):
+def parse_marketing_excel(file_path: str, db: Session, sheet_name: str = "Summary", model_name: str = "603"):
     """Parse marketing specific Excel format."""
     import re
     wb = openpyxl.load_workbook(file_path, data_only=True)
@@ -481,7 +483,10 @@ def parse_marketing_excel(file_path: str, db: Session, sheet_name: str = "Summar
             try: return int(float(v))
             except: return 0
 
-        existing = db.query(models.MarketingData).filter(models.MarketingData.date == actual_date).first()
+        existing = db.query(models.MarketingData).filter(
+            models.MarketingData.model_name == model_name,
+            models.MarketingData.date == actual_date
+        ).first()
         
         if existing:
             existing.month_name = current_month_name
@@ -494,6 +499,7 @@ def parse_marketing_excel(file_path: str, db: Session, sheet_name: str = "Summar
             existing.remarks = str(remarks) if remarks else ""
         else:
             db.add(models.MarketingData(
+                model_name=model_name,
                 date=actual_date,
                 month_name=current_month_name,
                 pd_hrs=safe_float(pd_hrs),

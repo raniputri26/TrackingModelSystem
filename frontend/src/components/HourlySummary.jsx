@@ -13,7 +13,7 @@ const CATEGORY_CELL_MAPPING = {
 
 const ALL_DEFAULT_CELLS = [...new Set(Object.values(CATEGORY_CELL_MAPPING).flat()), 'ZHANHUI'];
 
-const HourlySummary = ({ filterMode, filterValue, filterCell, activeCategory, categories, hiddenCells, setHiddenCells }) => {
+const HourlySummary = ({ filterMode, filterValue, filterCell, activeCategory, categories, hiddenCells, setHiddenCells, selectedModel }) => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -58,7 +58,7 @@ const HourlySummary = ({ filterMode, filterValue, filterCell, activeCategory, ca
         b_grade: 0,
         c_grade: 0,
         note: ''
-      });
+      }, selectedModel);
       fetchData();
     } catch (err) {
       console.error(`Failed to save data for ${cellName}`, err);
@@ -72,7 +72,7 @@ const HourlySummary = ({ filterMode, filterValue, filterCell, activeCategory, ca
       if (filterMode === 'day') params.date_filter = filterValue;
       else if (filterMode === 'month') params.month_filter = filterValue;
 
-      const res = await getHourlySummary(params);
+      const res = await getHourlySummary(params, selectedModel);
       let summaryData = res.data;
 
       const CELL_ORDER = ['Cell 3', 'Cell 4', 'Cell 5', 'Cell 9', 'Cell 10', 'Cell 11', 'Cell D3', 'Cell D5', 'Cell D6', 'Cell D7', 'Cell BZ', 'ZHANHUI'];
@@ -128,10 +128,9 @@ const HourlySummary = ({ filterMode, filterValue, filterCell, activeCategory, ca
 
   useEffect(() => {
     fetchData();
-    // Auto-refresh every 15 seconds
     const interval = setInterval(fetchData, 15000);
     return () => clearInterval(interval);
-  }, [filterMode, filterValue, filterCell]);
+  }, [filterMode, filterValue, filterCell, refreshTrigger, selectedModel]);
 
   const visibleSummaryData = useMemo(() => {
     let result = showZhanhui ? data : data.filter(r => r.cell !== 'ZHANHUI');
@@ -153,6 +152,7 @@ const HourlySummary = ({ filterMode, filterValue, filterCell, activeCategory, ca
             refreshTrigger={refreshTrigger}
             hiddenCells={hiddenCells}
             setHiddenCells={setHiddenCells}
+            selectedModel={selectedModel}
           />
         ))
       ) : (
@@ -166,12 +166,13 @@ const HourlySummary = ({ filterMode, filterValue, filterCell, activeCategory, ca
           refreshTrigger={refreshTrigger}
           hiddenCells={hiddenCells}
           setHiddenCells={setHiddenCells}
+          selectedModel={selectedModel}
         />
       )}
 
       {showModal && (
         <HourlyLogModal
-          editData={modalData}
+          initialData={modalData}
           onClose={() => {
             setShowModal(false);
             setModalData(null);
@@ -182,6 +183,7 @@ const HourlySummary = ({ filterMode, filterValue, filterCell, activeCategory, ca
             setRefreshTrigger(prev => prev + 1);
             fetchData();
           }}
+          selectedModel={selectedModel}
         />
       )}
 

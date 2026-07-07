@@ -21,8 +21,8 @@ const CATEGORY_ORDER = [
   'ASSEMBLY',
 ];
 
-const HourlyLogModal = ({ onClose, onSuccess, editData }) => {
-  const [categories, setCategories] = useState(CATEGORY_ORDER);
+const HourlyLogModal = ({ onClose, onSuccess, initialData: editData, categories: parentCategories, selectedModel }) => {
+  const [categories, setCategories] = useState(parentCategories || CATEGORY_ORDER);
   const [form, setForm] = useState({
     category: editData?.category || CATEGORY_ORDER[0],
     cell: editData?.cell || CELL_OPTIONS[0],
@@ -53,12 +53,16 @@ const HourlyLogModal = ({ onClose, onSuccess, editData }) => {
 
   useEffect(() => {
     // Fetch categories from DB and merge with defaults
-    getCategories().then(res => {
-      const merged = [...CATEGORY_ORDER];
-      res.data.forEach(c => { if (!merged.includes(c)) merged.push(c); });
-      setCategories(merged);
-    }).catch(() => {});
-  }, []);
+    if (!parentCategories) {
+      getCategories(selectedModel).then(res => {
+        const merged = [...CATEGORY_ORDER];
+        res.data.forEach(c => { if (!merged.includes(c)) merged.push(c); });
+        setCategories(merged);
+      }).catch(() => {});
+    } else {
+      setCategories(parentCategories);
+    }
+  }, [parentCategories, selectedModel]);
 
   const handleChange = (field, value) => {
     setForm(prev => ({ ...prev, [field]: value }));
@@ -79,9 +83,9 @@ const HourlyLogModal = ({ onClose, onSuccess, editData }) => {
       };
 
       if (editData?.id) {
-        await updateHourlyLog(editData.id, payload);
+        await updateHourlyLog(editData.id, payload, selectedModel);
       } else {
-        await createHourlyLog(payload);
+        await createHourlyLog(payload, selectedModel);
       }
       onSuccess();
     } catch (err) {

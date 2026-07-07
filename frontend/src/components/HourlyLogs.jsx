@@ -48,7 +48,7 @@ const CustomXAxisTick = ({ x, y, payload }) => {
   );
 };
 
-const HourlyLogs = () => {
+const HourlyLogs = ({ selectedModel }) => {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -64,7 +64,7 @@ const HourlyLogs = () => {
       const params = {};
       if (filterCategory !== 'all') params.category = filterCategory;
       if (filterDate) params.date_filter = filterDate;
-      const res = await getHourlyLogs(params);
+      const res = await getHourlyLogs(params, selectedModel);
       setLogs(res.data);
     } catch (err) {
       console.error('Failed to fetch hourly logs', err);
@@ -74,14 +74,14 @@ const HourlyLogs = () => {
   };
 
   useEffect(() => {
-    getCategories().then(res => {
+    getCategories(selectedModel).then(res => {
       const merged = [...CATEGORY_ORDER];
       res.data.forEach(c => { if (!merged.includes(c)) merged.push(c); });
       setCategories(merged);
     }).catch(() => { });
-  }, []);
+  }, [selectedModel]);
 
-  useEffect(() => { fetchLogs(); }, [filterCategory, filterDate]);
+  useEffect(() => { fetchLogs(); }, [filterCategory, filterDate, selectedModel]);
 
   // Auto-polling for real-time updates
   useEffect(() => {
@@ -90,7 +90,7 @@ const HourlyLogs = () => {
     }, 10000); // 10 seconds
 
     return () => clearInterval(interval);
-  }, [filterCategory, filterDate]); // Re-create interval if filters change to ensure correct data fetches
+  }, [filterCategory, filterDate, selectedModel]); // Re-create interval if filters change to ensure correct data fetches
 
   const handleDelete = async (id) => {
     if (!confirm('Yakin ingin menghapus data ini?')) return;
@@ -249,7 +249,7 @@ const HourlyLogs = () => {
         <div className="flex items-center justify-between gap-2">
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-            <h2 className="text-lg sm:text-2xl font-extrabold tracking-tight text-text leading-tight truncate">Hourly Output 603</h2>
+            <h2 className="text-lg sm:text-2xl font-extrabold tracking-tight text-text leading-tight truncate">Hourly Output {selectedModel}</h2>
               <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
                 <span className="relative flex h-1.5 w-1.5">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -635,16 +635,14 @@ const HourlyLogs = () => {
       {/* Modal */}
       {showModal && (
         <HourlyLogModal
-          editData={editData}
           onClose={() => {
             setShowModal(false);
             setEditData(null);
           }}
-          onSuccess={() => {
-            setShowModal(false);
-            setEditData(null);
-            fetchLogs();
-          }}
+          onSuccess={fetchLogs}
+          initialData={editData}
+          categories={categories}
+          selectedModel={selectedModel}
         />
       )}
     </div>
