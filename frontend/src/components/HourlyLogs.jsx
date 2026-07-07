@@ -25,7 +25,7 @@ const HOUR_ORDER = [
   '18:30 - 19:30', '19:30 - 20:30', '20:30 - 21:30',
 ];
 
-const CELL_ORDER = ['Cell 3', 'Cell 4', 'Cell 5', 'Cell 9', 'Cell 10', 'Cell 11', 'Cell D3', 'Cell D5', 'Cell D6', 'Cell D7', 'Cell BZ'];
+const CELL_ORDER = ['Cell 3', 'Cell 4', 'Cell 5', 'Cell 9', 'Cell 10', 'Cell 11', 'Cell D2', 'Cell D3', 'Cell D5', 'Cell D6', 'Cell D7', 'Cell BZ'];
 
 const cellSortKey = (name) => {
   const idx = CELL_ORDER.indexOf(name);

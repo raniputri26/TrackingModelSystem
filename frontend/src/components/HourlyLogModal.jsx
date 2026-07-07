@@ -11,7 +11,7 @@ const HOUR_RANGES = [
 
 const CELL_OPTIONS = [
   'Cell 3', 'Cell 4', 'Cell 5', 'Cell 9', 'Cell 10', 
-  'Cell 11', 'Cell D3', 'Cell D5', 'Cell D6', 'Cell D7', 'Cell BZ',
+  'Cell 11', 'Cell D2', 'Cell D3', 'Cell D5', 'Cell D6', 'Cell D7', 'Cell BZ',
 ];
 
 const CATEGORY_ORDER = [
