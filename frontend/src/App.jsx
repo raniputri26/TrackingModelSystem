@@ -359,9 +359,10 @@ function App() {
                   filterValue={filterValue}
                 />
               ) : activeMenu === 'hourly' ? (
-                <HourlyLogs selectedModel={selectedModel} />
+                <HourlyLogs key={selectedModel} selectedModel={selectedModel} />
               ) : activeMenu === 'hourly_summary' ? (
                 <HourlySummary
+                  key={selectedModel}
                   filterMode={filterMode}
                   filterValue={filterValue}
                   filterCell={filterCell}

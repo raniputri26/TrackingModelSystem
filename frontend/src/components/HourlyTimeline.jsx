@@ -77,6 +77,7 @@ const HourlyTimeline = ({ filterMode, filterValue, filterCell, category, title =
       setData(timelineData);
     } catch (err) {
       console.error("Failed to fetch hourly timeline", err);
+      setData([]); // Clear data on error so old data doesn't persist
     } finally {
       setLoading(false);
     }

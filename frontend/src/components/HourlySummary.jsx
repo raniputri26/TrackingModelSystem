@@ -121,6 +121,7 @@ const HourlySummary = ({ filterMode, filterValue, filterCell, activeCategory, ca
       setData(summaryData);
     } catch (err) {
       console.error("Failed to fetch hourly summary", err);
+      setData([]); // Clear data on error so old data doesn't persist
     } finally {
       setLoading(false);
     }
@@ -142,7 +143,7 @@ const HourlySummary = ({ filterMode, filterValue, filterCell, activeCategory, ca
       {activeCategory === 'ALL CATEGORY' ? (
         categories.map(cat => (
           <HourlyTimeline 
-            key={cat}
+            key={`${selectedModel}-${cat}`}
             filterMode={filterMode} 
             filterValue={filterValue} 
             filterCell={filterCell} 
@@ -157,6 +158,7 @@ const HourlySummary = ({ filterMode, filterValue, filterCell, activeCategory, ca
         ))
       ) : (
         <HourlyTimeline 
+          key={`${selectedModel}-${activeCategory}`}
           filterMode={filterMode} 
           filterValue={filterValue} 
           filterCell={filterCell} 
