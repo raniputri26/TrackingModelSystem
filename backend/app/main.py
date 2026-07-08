@@ -94,6 +94,30 @@ class HourlyInputModel(BaseModel):
     note: Optional[str] = None
     model_name: str = "603"
 
+class CellStyleUpdate(BaseModel):
+    model_name: str
+    category: str
+    cell: str
+    date: date
+    style_name: str
+
+@app.post("/cell-style")
+def set_cell_style(style: CellStyleUpdate, db: Session = Depends(database.get_db)):
+    existing = db.query(models.CellStyle).filter(
+        models.CellStyle.model_name == style.model_name,
+        models.CellStyle.date == style.date,
+        models.CellStyle.cell == style.cell
+    ).first()
+    
+    if existing:
+        existing.style_name = style.style_name
+        existing.category = style.category
+    else:
+        new_style = models.CellStyle(**style.dict())
+        db.add(new_style)
+    db.commit()
+    return {"message": "Style updated"}
+
 @app.get("/hourly-logs")
 def get_hourly_logs(category: Optional[str] = None, cell: Optional[str] = None, date_filter: Optional[date] = None, model_name: str = "603", db: Session = Depends(database.get_db)):
     query = db.query(models.HourlyProduction).filter(models.HourlyProduction.model_name == model_name)
@@ -235,12 +259,30 @@ def get_hourly_timeline(category: Optional[str] = None, date_filter: Optional[da
     
     # Pivot the data in Python to preserve IDs and handle multiple logs if any
     timeline_map = {}
+    
+    # Fetch styles if date_filter is present
+    styles = []
+    if date_filter:
+        style_query = db.query(models.CellStyle).filter(
+            models.CellStyle.model_name == model_name,
+            models.CellStyle.date == date_filter
+        )
+        if category and category != 'ALL CATEGORY':
+            style_query = style_query.filter(models.CellStyle.category == category)
+        styles = style_query.all()
+
+    # Pre-populate timeline_map with styles so empty cells show up if they have a style
+    for s in styles:
+        timeline_map[s.cell] = {"cell": s.cell, "category": s.category, "total_all": 0, "style": s.style_name}
+
     for log in results:
         cell = log.cell
         hour = log.hour_range
         
         if cell not in timeline_map:
-            timeline_map[cell] = {"cell": cell, "total_all": 0}
+            timeline_map[cell] = {"cell": cell, "category": log.category, "total_all": 0, "style": ""}
+        elif "category" not in timeline_map[cell]:
+            timeline_map[cell]["category"] = log.category
         
         # Store as an object with details
         if hour not in timeline_map[cell]:

@@ -57,6 +57,10 @@ export const getHourlyTimeline = (params, modelName = "603") => {
   return api.get('/hourly-timeline', { params: { ...params, model_name: modelName } });
 };
 
+export const updateCellStyle = (data) => {
+  return api.post('/cell-style', data);
+};
+
 // --- Visitor Analytics API ---
 export const trackVisit = () => {
   return api.post('/track-visit');

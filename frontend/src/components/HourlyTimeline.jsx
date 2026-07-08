@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { getHourlyTimeline } from '../api';
+import { getHourlyTimeline, updateCellStyle } from '../api';
 import { Clock, TrendingUp, ChevronLeft, ChevronRight, Eye, EyeOff, ChevronDown } from 'lucide-react';
 
 const HOUR_COLUMNS = [
@@ -21,6 +21,36 @@ const HourlyTimeline = ({ filterMode, filterValue, filterCell, category, title =
   const [loading, setLoading] = useState(false);
   const [showInput, setShowInput] = useState(false);
   const [isManageOpen, setIsManageOpen] = useState(false);
+  const [editedStyles, setEditedStyles] = useState({});
+
+  const handleStyleChange = (cell, value) => {
+    setEditedStyles(prev => ({ ...prev, [cell]: value }));
+  };
+
+  const handleStyleBlur = async (cell, categoryName) => {
+    if (filterMode !== 'day' || !filterValue) return;
+    
+    const styleValue = editedStyles[cell];
+    // If not edited, do nothing
+    if (styleValue === undefined) return;
+    
+    try {
+      await updateCellStyle({
+        model_name: selectedModel,
+        category: categoryName || category,
+        cell: cell,
+        date: filterValue,
+        style_name: styleValue
+      });
+      // Update local data to reflect save
+      setData(prev => prev.map(row => 
+        row.cell === cell ? { ...row, style: styleValue } : row
+      ));
+    } catch (err) {
+      console.error("Failed to save style", err);
+      alert("Gagal menyimpan style. Silakan coba lagi.");
+    }
+  };
 
   const visibleData = useMemo(() => {
     return data.filter(row => !hiddenCells.includes(row.cell));
@@ -187,6 +217,11 @@ const HourlyTimeline = ({ filterMode, filterValue, filterCell, category, title =
               <th className="sticky left-0 z-30 py-4 px-4 sm:px-6 text-left text-[10px] font-bold text-[var(--color-table-header-text)] uppercase tracking-widest border-b border-r border-border min-w-[100px] sm:min-w-[140px]" style={{ backgroundColor: 'var(--color-table-header)' }}>
                 Cell Name
               </th>
+              
+              <th className="py-4 px-4 sm:px-6 text-left text-[10px] font-bold text-[var(--color-table-header-text)] uppercase tracking-widest border-b border-r border-border min-w-[120px]">
+                Style
+              </th>
+
               {HOUR_COLUMNS.map(hour => (
                 <th key={hour} className="p-0 border-b border-r border-border min-w-[80px] sm:min-w-[120px]">
                   <div className="flex flex-col h-full w-full">
@@ -211,7 +246,7 @@ const HourlyTimeline = ({ filterMode, filterValue, filterCell, category, title =
           <tbody className="divide-y divide-border/50">
             {loading && data.length === 0 ? (
               <tr>
-                <td colSpan={HOUR_COLUMNS.length + 2} className="text-center py-20">
+                <td colSpan={HOUR_COLUMNS.length + 3} className="text-center py-20">
                   <div className="flex flex-col items-center gap-3">
                     <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-primary"></div>
                     <span className="text-xs text-text-muted font-medium">Loading timeline...</span>
@@ -220,7 +255,7 @@ const HourlyTimeline = ({ filterMode, filterValue, filterCell, category, title =
               </tr>
             ) : visibleData.length === 0 ? (
               <tr>
-                <td colSpan={HOUR_COLUMNS.length + 2} className="text-center py-20 opacity-40">
+                <td colSpan={HOUR_COLUMNS.length + 3} className="text-center py-20 opacity-40">
                     <p className="text-sm font-bold text-text-muted uppercase tracking-widest">No Active Cells</p>
                     <p className="text-xs text-text-muted mt-1">All cells are hidden. Enable them from the "Cells" dropdown.</p>
                 </td>
@@ -245,6 +280,27 @@ const HourlyTimeline = ({ filterMode, filterValue, filterCell, category, title =
                       </button>
                     </div>
                   </td>
+                  
+                  <td className="py-3 sm:py-4 px-4 sm:px-6 border-r border-border transition-colors">
+                    {filterMode === 'day' ? (
+                      <input
+                        type="text"
+                        placeholder="Style..."
+                        value={editedStyles[row.cell] !== undefined ? editedStyles[row.cell] : (row.style || '')}
+                        onChange={(e) => handleStyleChange(row.cell, e.target.value)}
+                        onBlur={() => handleStyleBlur(row.cell, row.category)}
+                        onKeyDown={(e) => {
+                           if (e.key === 'Enter') {
+                             e.target.blur();
+                           }
+                        }}
+                        className="w-full bg-surface/50 border border-border/50 rounded px-2 py-1 text-xs text-text focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all placeholder:text-text-muted/30"
+                      />
+                    ) : (
+                      <span className="text-xs text-text-muted">{row.style || '-'}</span>
+                    )}
+                  </td>
+
                   {HOUR_COLUMNS.map(hour => {
                     const cellData = row[hour] || { total: 0, input_total: 0, logs: [] };
                     const val = cellData.total;
@@ -304,6 +360,7 @@ const HourlyTimeline = ({ filterMode, filterValue, filterCell, category, title =
                     {showInput && <span className="text-primary opacity-80">Hourly Input</span>}
                   </div>
                 </td>
+                <td className="border-r border-border" />
                 {HOUR_COLUMNS.map(hour => {
                   const hourlyTotal = visibleData.reduce((acc, r) => acc + (r[hour]?.total || 0), 0);
                   const hourlyInputTotal = visibleData.reduce((acc, r) => acc + (r[hour]?.input_total || 0), 0);

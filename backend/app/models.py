@@ -41,6 +41,18 @@ class HourlyProduction(Base):
     # Ensure no duplicates for the exact same hour block in the same cell
     __table_args__ = (UniqueConstraint('model_name', 'category', 'cell', 'date', 'hour_range', name='_hourly_uc'),)
 
+class CellStyle(Base):
+    __tablename__ = "cell_styles"
+
+    id = Column(Integer, primary_key=True, index=True)
+    model_name = Column(String(50), default="603", index=True)
+    category = Column(String(100), index=True)
+    cell = Column(String(50), index=True)
+    date = Column(Date, index=True)
+    style_name = Column(String(200))
+
+    __table_args__ = (UniqueConstraint('model_name', 'category', 'cell', 'date', name='_style_uc'),)
+
 class VisitorLog(Base):
     __tablename__ = "visitor_logs"
 
