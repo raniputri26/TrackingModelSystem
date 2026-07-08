@@ -78,7 +78,7 @@ function App() {
 
       // Add standard categories in fixed order
       CATEGORY_ORDER.forEach(c => {
-        if (res.data.includes(c)) sorted.push(c);
+        sorted.push(c);
       });
 
       // Add any other categories from DB
