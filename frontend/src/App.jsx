@@ -370,6 +370,7 @@ function App() {
                   categories={categories.filter(c => c !== 'ALL CATEGORY')}
                   hiddenCells={hiddenCells}
                   setHiddenCells={setHiddenCells}
+                  selectedModel={selectedModel}
                 />
               ) : activeMenu === 'dashboard' ? (
                 dashboardType === 'produksi' ? (
