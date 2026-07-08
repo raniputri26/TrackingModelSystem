@@ -158,6 +158,7 @@ def update_hourly_log(log_id: int, log: HourlyInputModel, db: Session = Depends(
     record.b_grade = log.b_grade
     record.c_grade = log.c_grade
     record.note = log.note
+    record.model_name = log.model_name
     
     db.commit()
     return {"message": "Updated successfully"}
