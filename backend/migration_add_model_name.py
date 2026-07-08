@@ -28,6 +28,14 @@ def run_migration():
                 # Error 1060 berarti kolom sudah ada, jadi bisa diabaikan
                 print(f"[SKIP] Kolom model_name di {table} (mungkin sudah ada).")
 
+        # Khusus untuk tabel hourly_production, tambahkan input_qty jika belum ada
+        try:
+            conn.execute(text("ALTER TABLE hourly_production ADD COLUMN input_qty INT DEFAULT 0"))
+            conn.commit()
+            print("[OK] Kolom input_qty ditambahkan ke hourly_production.")
+        except Exception as e:
+            print("[SKIP] Kolom input_qty di hourly_production (mungkin sudah ada).")
+
         print("\n--- 2. Memperbarui aturan Unique Constraint agar memperbolehkan data dengan model yang berbeda ---")
         
         # Production Data
