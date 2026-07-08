@@ -50,7 +50,7 @@ const AllCategoryDashboardTable = ({ data }) => {
     const result = Object.values(cellMap);
 
     // Sort cells naturally
-    const CELL_ORDER = ['Cell 3', 'Cell 4', 'Cell 5', 'Cell 9', 'Cell 10', 'Cell 11', 'Cell D3', 'Cell D5', 'Cell D6', 'Cell D7', 'Cell BZ'];
+    const CELL_ORDER = ['Cell 3', 'Cell 4', 'Cell 5', 'Cell 9', 'Cell 10', 'Cell 11', 'Cell D3', 'Cell D4', 'Cell D5', 'Cell D6', 'Cell D7', 'Cell BZ'];
     result.sort((a, b) => {
       const idxA = CELL_ORDER.indexOf(a.cell);
       const idxB = CELL_ORDER.indexOf(b.cell);

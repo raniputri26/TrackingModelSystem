@@ -7,7 +7,7 @@ import HourlyLogModal from './HourlyLogModal';
 const CATEGORY_CELL_MAPPING = {
   'CUTTING + PREPARATION': ['Cell 3', 'Cell 4', 'Cell 5', 'Cell 9', 'Cell 10', 'Cell 11'],
   'COMPUTER STITCHING': ['Cell 3', 'Cell 4', 'Cell 5', 'Cell 9', 'Cell 10'],
-  'SEWING': ['Cell 3', 'Cell 4', 'Cell 5', 'Cell 9', 'Cell 10', 'Cell 11', 'Cell D3', 'Cell D5', 'Cell D6', 'Cell D7', 'Cell BZ'],
+  'SEWING': ['Cell 3', 'Cell 4', 'Cell 5', 'Cell 9', 'Cell 10', 'Cell 11', 'Cell D3', 'Cell D4', 'Cell D5', 'Cell D6', 'Cell D7', 'Cell BZ'],
   'ASSEMBLY': ['Cell 4', 'Cell 5', 'Cell 9', 'Cell 10', 'Cell 11'],
 };
 
